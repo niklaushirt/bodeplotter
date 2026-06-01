@@ -90,19 +90,20 @@ It's pretty easy to build.
 
 My everyday coil driver
 
-![IMG_8283 Medium](screenshots/IMG_8283 Medium.jpeg)
+
+![Coil1](screenshots/Coil1.png)
 
 
 
 With a pickup hooked up
 
-![IMG_8284 Medium](screenshots/IMG_8284 Medium.jpeg)
+![Coil2](screenshots/Coil2.png)
 
 
 
 The inside
 
-![IMG_8285 Medium](screenshots/IMG_8285 Medium.jpeg)
+![Coil3](screenshots/Coil3.png)
 
 
 
