@@ -1,0 +1,1793 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nick's Guitar Pickup Bode Plotter</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --panel: #15181f;
+      --panel-soft: #1d222c;
+      --line: #303747;
+      --text: #eef3fb;
+      --muted: #9aa8bb;
+      --accent: #004cfc;
+      --accent-2: #ff9c00;
+      --danger: #ff647c;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, rgba(19, 24, 33, 0.94), rgba(10, 12, 17, 0.98)),
+        radial-gradient(circle at 18% 0%, rgba(53, 208, 162, 0.13), transparent 34%),
+        #0b0d12;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      margin: 0 auto;
+      max-width: none;
+      padding: 20px 24px 28px;
+      width: 100%;
+    }
+
+    .topbar {
+      align-items: flex-end;
+      border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+      display: flex;
+      gap: 18px;
+      justify-content: space-between;
+      padding-bottom: 20px;
+    }
+
+    h1, h2, p {
+      margin: 0;
+    }
+
+    h1 {
+      color: var(--accent-2);
+      font-size: clamp(2rem, 4vw, 2.55rem);
+      font-weight: 900;
+      line-height: 1.08;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      font-size: 0.94rem;
+      line-height: 1.55;
+      margin-top: 8px;
+      max-width: 780px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: flex-end;
+    }
+
+    .layout {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: 280px 330px minmax(0, 1fr) 300px;
+    }
+
+    .routing-sidebar {
+      order: 1;
+    }
+
+    .settings-sidebar {
+      order: 2;
+    }
+
+    .chart-panel {
+      order: 3;
+    }
+
+    .slots-sidebar {
+      order: 4;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(29, 34, 44, 0.92), rgba(18, 21, 29, 0.96));
+      border: 1px solid rgba(125, 143, 168, 0.18);
+      border-radius: 8px;
+      box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+    }
+
+    .panel-pad {
+      padding: 16px;
+    }
+
+    h2 {
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .field-grid {
+      display: grid;
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    label {
+      color: #cbd5e1;
+      display: grid;
+      font-size: 0.88rem;
+      gap: 8px;
+    }
+
+    .control {
+      background: #0f1218;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.16s ease, box-shadow 0.16s ease;
+      height: 44px;
+      padding: 0 12px;
+      width: 100%;
+    }
+
+    .control:focus {
+      border-color: rgba(53, 208, 162, 0.85);
+      box-shadow: 0 0 0 3px rgba(53, 208, 162, 0.16);
+    }
+
+    input[type="range"] {
+      accent-color: var(--accent);
+    }
+
+    .button {
+      align-items: center;
+      border-radius: 8px;
+      display: inline-flex;
+      font-weight: 700;
+      gap: 0.55rem;
+      justify-content: center;
+      min-height: 2.75rem;
+      transition: transform 0.12s ease, border-color 0.16s ease, background 0.16s ease;
+      border: 1px solid #475569;
+      color: #fff;
+      cursor: pointer;
+      padding: 0 15px;
+      white-space: nowrap;
+    }
+
+    .button svg {
+      height: 20px;
+      width: 20px;
+    }
+
+    .button-primary {
+      background: #35d0a2;
+      border-color: #35d0a2;
+      color: #07110e;
+    }
+
+    .button-primary:hover {
+      background: #68e3bf;
+    }
+
+    .button-secondary {
+      background: #0f172a;
+    }
+
+    .button-secondary:hover {
+      border-color: #35d0a2;
+    }
+
+    .button-warn:hover {
+      border-color: #ff647c;
+    }
+
+    .button-orange {
+      background: var(--accent-2);
+      border-color: #ffd18a;
+      color: #170f05;
+    }
+
+    .button-orange:hover {
+      background: #ffd18a;
+      border-color: #ffe2b5;
+    }
+
+    .button-danger,
+    .button-danger-active {
+      background: #dc3545;
+      border-color: #ff647c;
+      color: #fff;
+    }
+
+    .button-danger-active:disabled {
+      opacity: 1;
+    }
+
+    .button-danger:hover {
+      background: #ef5060;
+      border-color: #ff8c9b;
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.48;
+    }
+
+    .button:active {
+      transform: translateY(1px);
+    }
+
+    .meter-shell {
+      background: #080a0f;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      height: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .meter-fill {
+      background: linear-gradient(90deg, #35d0a2 0%, #c8d85a 68%, #ff9b5a 86%, #ff647c 100%);
+      height: 100%;
+      transform-origin: left center;
+      transition: transform 0.08s linear;
+      width: 100%;
+    }
+
+    .readout {
+      background: rgba(8, 10, 15, 0.62);
+      border: 1px solid rgba(125, 143, 168, 0.15);
+      border-radius: 8px;
+      padding: 12px;
+    }
+
+    .readout-grid {
+      border-bottom: 1px solid rgba(71, 85, 105, 0.5);
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      padding-bottom: 16px;
+    }
+
+    .readout-label {
+      color: #94a3b8;
+      font-size: 0.74rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .readout-value {
+      font-size: 1.55rem;
+      font-weight: 900;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .readout-value-accent {
+      color: var(--accent-2);
+    }
+
+    .status-value {
+      color: #e2e8f0;
+      font-size: 0.9rem;
+      font-weight: 800;
+      margin-top: 7px;
+    }
+
+    .status-error {
+      color: #fda4af;
+    }
+
+    .status-ok {
+      color: #6ee7b7;
+    }
+
+    .status-calibrating {
+      color: var(--accent-2);
+    }
+
+    .status-sweeping {
+      color: #ff647c;
+    }
+
+    .chart-panel {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      padding: 16px;
+    }
+
+    .chart-wrap {
+      flex: 1;
+      min-height: 0;
+      padding-top: 16px;
+    }
+
+    .note {
+      color: #94a3b8;
+      font-size: 0.78rem;
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+
+    .range-label {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .switch-row {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .switch-row input {
+      height: 20px;
+      width: 20px;
+    }
+
+    .meter-block + .meter-block {
+      margin-top: 16px;
+    }
+
+    .meter-label {
+      align-items: center;
+      display: flex;
+      font-size: 0.9rem;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .meter-label span {
+      color: #cbd5e1;
+    }
+
+    .slot-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .slot-row {
+      border: 1px solid rgba(125, 143, 168, 0.16);
+      border-radius: 8px;
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+    }
+
+    .slot-head {
+      align-items: center;
+      display: grid;
+      gap: 8px;
+      grid-template-columns: auto 1fr auto;
+    }
+
+    .slot-color {
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 999px;
+      height: 14px;
+      width: 14px;
+    }
+
+    .slot-actions {
+      display: grid;
+      gap: 6px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .slot-button {
+      background: #0f172a;
+      border: 1px solid #475569;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.78rem;
+      font-weight: 700;
+      min-height: 34px;
+    }
+
+    .slot-button:hover {
+      border-color: var(--accent);
+    }
+
+    .slot-button:disabled {
+      cursor: not-allowed;
+      opacity: 0.45;
+    }
+
+    .slot-meta {
+      color: #94a3b8;
+      font-size: 0.72rem;
+      min-height: 1rem;
+    }
+
+    .help-overlay {
+      align-items: center;
+      background: rgba(3, 6, 12, 0.72);
+      display: none;
+      inset: 0;
+      justify-content: center;
+      padding: 20px;
+      position: fixed;
+      z-index: 50;
+    }
+
+    .help-overlay.is-open {
+      display: flex;
+    }
+
+    .help-dialog {
+      max-width: 520px;
+      width: min(100%, 520px);
+    }
+
+    .help-list {
+      color: #cbd5e1;
+      line-height: 1.55;
+      margin: 16px 0 0;
+      padding-left: 22px;
+    }
+
+    .help-list li + li {
+      margin-top: 8px;
+    }
+
+    .help-links {
+      border-top: 1px solid rgba(125, 143, 168, 0.18);
+      color: #cbd5e1;
+      display: grid;
+      gap: 10px;
+      line-height: 1.5;
+      margin-top: 18px;
+      padding-top: 16px;
+    }
+
+    .help-links a {
+      color: var(--accent-2);
+    }
+
+    canvas {
+      min-height: 860px;
+    }
+
+    @media (max-width: 720px) {
+      .app {
+        padding: 18px 14px 24px;
+      }
+
+      .topbar,
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .topbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .actions {
+        justify-content: flex-start;
+      }
+
+      .readout-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      canvas {
+        min-height: 520px;
+      }
+    }
+
+    @media (max-width: 1120px) and (min-width: 721px) {
+      .layout {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      }
+
+      .chart-panel {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 1500px) and (min-width: 1121px) {
+      .layout {
+        grid-template-columns: 280px minmax(0, 1fr) 300px;
+      }
+
+      .routing-sidebar,
+      .settings-sidebar {
+        grid-column: 1;
+      }
+
+      .chart-panel {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+      }
+
+      .slots-sidebar {
+        grid-column: 3;
+        grid-row: 1 / span 2;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .button {
+        flex: 1 1 auto;
+      }
+
+      .readout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <h1>Nick's Guitar Pickup Bode Plotter</h1>
+        <p class="subtitle">
+          Sweep a compensated sine signal through a pickup test rig, measure the soundcard input, and plot the normalized frequency response.
+        </p>
+      </div>
+      <div class="actions">
+        <button id="setupBtn" class="button button-primary" type="button">
+          <i data-lucide="power"></i> Enable Audio
+        </button>
+        <button id="testBtn" class="button button-secondary" type="button" disabled>
+          <i data-lucide="audio-lines"></i> Test Signal
+        </button>
+        <button id="sweepBtn" class="button button-orange" type="button" disabled>
+          <i data-lucide="chart-spline"></i> START SWEEP
+        </button>
+        <button id="stopBtn" class="button button-secondary button-warn" type="button" disabled title="Stop">
+          <i data-lucide="square"></i>
+        </button>
+        <button id="exportBtn" class="button button-secondary" type="button">
+          <i data-lucide="download"></i> Export PNG
+        </button>
+        <button id="clearBtn" class="button button-secondary" type="button">
+          <i data-lucide="eraser"></i> Clear Latest
+        </button>
+        <button id="helpBtn" class="button button-secondary" type="button">
+          <i data-lucide="circle-help"></i> Help
+        </button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="sidebar routing-sidebar">
+        <div class="panel panel-pad">
+          <h2>Meters</h2>
+          <div class="field-grid">
+            <div class="meter-block">
+              <div class="meter-label"><span>Input</span><strong id="inputDb">-∞ dBFS</strong></div>
+              <div class="meter-shell"><div id="inputMeter" class="meter-fill" style="transform: scaleX(0)"></div></div>
+            </div>
+            <div class="meter-block">
+              <div class="meter-label"><span>Output</span><strong id="outputDb">-∞ dBFS</strong></div>
+              <div class="meter-shell"><div id="outputMeter" class="meter-fill" style="transform: scaleX(0)"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-pad">
+          <h2>Audio routing</h2>
+          <div class="field-grid">
+            <label>
+              Input device
+              <select id="inputDevice" class="control"></select>
+            </label>
+            <label>
+              Input channel
+              <select id="inputChannel" class="control">
+                <option value="0">Channel 1 / left</option>
+                <option value="1">Channel 2 / right</option>
+                <option value="mix">Mono mix</option>
+              </select>
+            </label>
+            <label>
+              Output device
+              <select id="outputDevice" class="control"></select>
+            </label>
+            <label>
+              Output channel
+              <select id="outputChannel" class="control">
+                <option value="both">Both channels</option>
+                <option value="0">Channel 1 / left</option>
+                <option value="1">Channel 2 / right</option>
+              </select>
+            </label>
+          </div>
+          <p id="routeNote" class="note">Audio device names appear after browser permission is granted.</p>
+        </div>
+      </aside>
+
+      <aside class="sidebar settings-sidebar">
+        <div class="panel panel-pad">
+          <h2>Sweep settings</h2>
+          <div class="field-grid">
+            <label>
+              Start frequency
+              <input id="startFrequency" class="control" type="number" min="300" max="19000" step="10" value="500">
+            </label>
+            <label>
+              End frequency
+              <input id="endFrequency" class="control" type="number" min="600" max="20000" step="10" value="7000">
+            </label>
+            <label>
+              <span class="range-label"><span>Scan Durtation</span><strong id="durationValue">10 s</strong></span>
+              <input id="duration" type="range" min="1" max="60" value="10">
+            </label>
+            <label>
+              <span class="range-label"><span>Readings per point</span><strong id="readingsValue">15</strong></span>
+              <input id="readings" type="range" min="1" max="50" value="15">
+            </label>
+            <label>
+              <span class="range-label"><span>Input sensitivity</span><strong id="calibrationValue">0 dB</strong></span>
+              <input id="calibration" type="range" min="-24" max="24" value="0" step="0.5">
+            </label>
+            <label>
+              <span class="range-label"><span>Output attenuation</span><strong id="outputAttenuationValue">6 dB/oct</strong></span>
+              <input id="outputAttenuation" type="range" min="0" max="6" value="6" step="0.1">
+            </label>
+            <label class="switch-row">
+              <span>Sine-only filter</span>
+              <input id="sineFilter" type="checkbox" checked>
+            </label>
+          </div>
+        </div>
+
+        <div class="panel panel-pad">
+          <h2>Graph settings</h2>
+          <div class="field-grid">
+            <label>
+              <span class="range-label"><span>Graph smoothness</span><strong id="smoothnessValue">5</strong></span>
+              <input id="smoothness" type="range" min="1" max="10" value="5">
+            </label>
+            <label>
+              <span class="range-label"><span>Graph offset</span><strong id="measurementOffsetValue">4 dB/oct</strong></span>
+              <input id="measurementOffset" type="range" min="0" max="12" value="4" step="0.1">
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <aside class="sidebar slots-sidebar">
+        <div class="panel panel-pad">
+          <h2>Measurement slots</h2>
+          <div class="field-grid slot-list" id="slotList">
+            <div class="slot-row" data-slot="0">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#35d0a2"></span>
+                <input class="control slot-name" type="text" value="Slot 1" aria-label="Slot 1 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+            <div class="slot-row" data-slot="1">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#4ea1ff"></span>
+                <input class="control slot-name" type="text" value="Slot 2" aria-label="Slot 2 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+            <div class="slot-row" data-slot="2">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#ff9b45"></span>
+                <input class="control slot-name" type="text" value="Slot 3" aria-label="Slot 3 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+            <div class="slot-row" data-slot="3">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#ffffff"></span>
+                <input class="control slot-name" type="text" value="Slot 4" aria-label="Slot 4 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+            <div class="slot-row" data-slot="4">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#b76cff"></span>
+                <input class="control slot-name" type="text" value="Slot 5" aria-label="Slot 5 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+            <div class="slot-row" data-slot="5">
+              <div class="slot-head">
+                <span class="slot-color" style="background:#00d8ff"></span>
+                <input class="control slot-name" type="text" value="Slot 6" aria-label="Slot 6 name">
+                <label class="switch-row"><span>Show</span><input class="slot-visible" type="checkbox" checked></label>
+              </div>
+              <div class="slot-actions">
+                <button class="slot-button slot-store" type="button">Store</button>
+                <button class="slot-button slot-save" type="button">Save</button>
+                <button class="slot-button slot-load" type="button">Load</button>
+              </div>
+              <div class="slot-meta">Empty</div>
+              <input class="slot-file" type="file" accept=".txt,text/plain,application/json" hidden>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <section class="panel chart-panel">
+        <div class="readout-grid">
+          <div class="readout">
+            <div class="readout-label">Current frequency</div>
+            <div id="freqReadout" class="readout-value">-- Hz</div>
+          </div>
+          <div class="readout">
+            <div class="readout-label">Peak response</div>
+            <div id="peakReadout" class="readout-value readout-value-accent">--</div>
+          </div>
+          <div class="readout">
+            <div class="readout-label">Progress</div>
+            <div id="progressReadout" class="readout-value">0%</div>
+          </div>
+          <div class="readout">
+            <div class="readout-label">Status</div>
+            <div id="statusText" class="status-value">Idle</div>
+          </div>
+        </div>
+        <div class="chart-wrap">
+          <canvas id="chart"></canvas>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <div id="helpOverlay" class="help-overlay" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="panel panel-pad help-dialog">
+      <h2 id="helpTitle">Usage</h2>
+      <ol class="help-list">
+        <li>Place your pickup in the device.</li>
+        <li>Connect to your soundcard.</li>
+        <li>Enable Audio.</li>
+        <li>Select the audio input and output of your soundcard.</li>
+        <li>Launch the Test Signal tone to check for input signal.</li>
+        <li>Start the Sweep.</li>
+        <li>Adjust Smoothness and Measurement offset to taste.</li>
+      </ol>
+      <div class="help-links">
+        <p>Build your own coil driver <a href="https://www.youtube.com/watch?v=SCeFtqdcS1Y" target="_blank" rel="noopener noreferrer">https://www.youtube.com/watch?v=SCeFtqdcS1Y</a></p>
+        <p>This tool is for playing around and gives rough approximations. If you are serious about plotting your pickups, get the Bode Plotter at <a href="https://www.axetech.com" target="_blank" rel="noopener noreferrer">https://www.axetech.com</a></p>
+        <p>©2026 Built with ❤️ by Niklaus Hirt</p>
+      </div>
+      <div class="actions" style="margin-top:18px">
+        <button id="helpCloseBtn" class="button button-primary" type="button">
+          <i data-lucide="x"></i> Close
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEFAULT_START_FREQ = 500;
+    const DEFAULT_END_FREQ = 7000;
+    const PRESCAN_HZ = 300;
+    const POINT_COUNT = 128;
+    const FFT_SIZE = 8192;
+    const MIN_DB = -96;
+    const CURRENT_COLOR = "#ff3b4f";
+    const SLOT_COLORS = ["#35d0a2", "#4ea1ff", "#ff9b45", "#ffffff", "#b76cff", "#00d8ff"];
+
+    const els = {
+      setupBtn: document.getElementById("setupBtn"),
+      testBtn: document.getElementById("testBtn"),
+      sweepBtn: document.getElementById("sweepBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      helpBtn: document.getElementById("helpBtn"),
+      helpOverlay: document.getElementById("helpOverlay"),
+      helpCloseBtn: document.getElementById("helpCloseBtn"),
+      stopBtn: document.getElementById("stopBtn"),
+      inputDevice: document.getElementById("inputDevice"),
+      outputDevice: document.getElementById("outputDevice"),
+      inputChannel: document.getElementById("inputChannel"),
+      outputChannel: document.getElementById("outputChannel"),
+      startFrequency: document.getElementById("startFrequency"),
+      endFrequency: document.getElementById("endFrequency"),
+      duration: document.getElementById("duration"),
+      readings: document.getElementById("readings"),
+      smoothness: document.getElementById("smoothness"),
+      calibration: document.getElementById("calibration"),
+      outputAttenuation: document.getElementById("outputAttenuation"),
+      measurementOffset: document.getElementById("measurementOffset"),
+      sineFilter: document.getElementById("sineFilter"),
+      durationValue: document.getElementById("durationValue"),
+      readingsValue: document.getElementById("readingsValue"),
+      smoothnessValue: document.getElementById("smoothnessValue"),
+      calibrationValue: document.getElementById("calibrationValue"),
+      outputAttenuationValue: document.getElementById("outputAttenuationValue"),
+      measurementOffsetValue: document.getElementById("measurementOffsetValue"),
+      inputMeter: document.getElementById("inputMeter"),
+      outputMeter: document.getElementById("outputMeter"),
+      inputDb: document.getElementById("inputDb"),
+      outputDb: document.getElementById("outputDb"),
+      routeNote: document.getElementById("routeNote"),
+      freqReadout: document.getElementById("freqReadout"),
+      peakReadout: document.getElementById("peakReadout"),
+      progressReadout: document.getElementById("progressReadout"),
+      statusText: document.getElementById("statusText"),
+    };
+
+    const state = {
+      audio: null,
+      inputStream: null,
+      source: null,
+      splitter: null,
+      inputGain: null,
+      analyser: null,
+      outputDestination: null,
+      outputAudio: null,
+      oscillator: null,
+      generatorGain: null,
+      outputMerger: null,
+      outputAnalyser: null,
+      meterFrame: 0,
+      isSweeping: false,
+      isTesting: false,
+      abort: false,
+      chart: null,
+      chartData: [],
+      smoothData: [],
+      showFinalAverageOnly: false,
+      activePeakSource: null,
+      noiseFloors: new Map(),
+      activeNoiseFloor: 0,
+      noiseCalibrationId: 0,
+      slots: SLOT_COLORS.map((color, index) => ({
+        color,
+        name: `Slot ${index + 1}`,
+        visible: true,
+        points: [],
+        start: DEFAULT_START_FREQ,
+        end: DEFAULT_END_FREQ,
+      })),
+      sampleBuffer: null,
+      outputBuffer: null,
+    };
+
+    function formatHz(value) {
+      if (!Number.isFinite(value)) return "-- Hz";
+      return value >= 1000 ? `${(value / 1000).toFixed(2)} kHz` : `${Math.round(value)} Hz`;
+    }
+
+    function dbToGain(db) {
+      return Math.pow(10, db / 20);
+    }
+
+    function gainToDb(gain) {
+      return gain > 0 ? 20 * Math.log10(gain) : MIN_DB;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    function getFrequencySettings() {
+      let start = Number(els.startFrequency.value) || DEFAULT_START_FREQ;
+      let end = Number(els.endFrequency.value) || DEFAULT_END_FREQ;
+      start = clamp(start, 300, 19000);
+      end = clamp(end, start + 10, 20000);
+      return {
+        start,
+        end,
+        scanStart: Math.max(20, start - PRESCAN_HZ),
+      };
+    }
+
+    function syncFrequencyInputs() {
+      const { start, end } = getFrequencySettings();
+      els.startFrequency.value = Math.round(start);
+      els.endFrequency.value = Math.round(end);
+      updateChart();
+    }
+
+    function frequencyAt(index, start, end) {
+      const ratio = index / (POINT_COUNT - 1);
+      return start * Math.pow(end / start, ratio);
+    }
+
+    function updateRangeLabels() {
+      els.durationValue.textContent = `${els.duration.value} s`;
+      els.readingsValue.textContent = els.readings.value;
+      els.smoothnessValue.textContent = els.smoothness.value;
+      const cal = Number(els.calibration.value);
+      const attenuation = Number(els.outputAttenuation.value);
+      const measurementOffset = Number(els.measurementOffset.value);
+      els.calibrationValue.textContent = `${cal > 0 ? "+" : ""}${cal.toFixed(cal % 1 ? 1 : 0)} dB`;
+      els.outputAttenuationValue.textContent = `${attenuation.toFixed(attenuation % 1 ? 1 : 0)} dB/oct`;
+      els.measurementOffsetValue.textContent = `${measurementOffset.toFixed(measurementOffset % 1 ? 1 : 0)} dB/oct`;
+      if (state.generatorGain && state.oscillator) {
+        state.generatorGain.gain.setTargetAtTime(compensatedGain(state.oscillator.frequency.value), state.audio.currentTime, 0.015);
+      }
+      updateChart();
+    }
+
+    function setStatus(text, tone = "normal") {
+      els.statusText.textContent = text;
+      els.statusText.className = `status-value ${tone === "error" ? "status-error" : tone === "ok" ? "status-ok" : tone === "calibrating" ? "status-calibrating" : tone === "sweeping" ? "status-sweeping" : ""}`;
+    }
+
+    function setBusy(isBusy) {
+      els.setupBtn.disabled = isBusy;
+      els.testBtn.disabled = isBusy || !state.audio;
+      els.sweepBtn.disabled = isBusy || !state.audio;
+      els.stopBtn.disabled = !isBusy;
+      els.stopBtn.classList.toggle("button-danger-active", state.isSweeping);
+    }
+
+    async function enumerateDevices() {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const inputs = devices.filter((device) => device.kind === "audioinput");
+      const outputs = devices.filter((device) => device.kind === "audiooutput");
+
+      fillDeviceSelect(els.inputDevice, inputs, "Default input");
+      fillDeviceSelect(els.outputDevice, outputs, "Default output");
+    }
+
+    function fillDeviceSelect(select, devices, fallbackLabel) {
+      const previous = select.value;
+      select.innerHTML = "";
+      const defaultOption = new Option(fallbackLabel, "");
+      select.add(defaultOption);
+      devices.forEach((device, index) => {
+        const label = device.label || `${fallbackLabel.replace("Default ", "")} ${index + 1}`;
+        select.add(new Option(label, device.deviceId));
+      });
+      select.value = [...select.options].some((option) => option.value === previous) ? previous : "";
+    }
+
+    function selectFirstDevice(select) {
+      if (select.options.length > 1) {
+        select.selectedIndex = 1;
+        return select.value;
+      }
+      select.selectedIndex = 0;
+      return "";
+    }
+
+    function createChart() {
+      const ctx = document.getElementById("chart");
+      state.chart = new Chart(ctx, {
+        type: "line",
+        data: { datasets: [] },
+        options: {
+          animation: false,
+          maintainAspectRatio: false,
+          interaction: { intersect: false, mode: "nearest" },
+          plugins: {
+            legend: {
+      labels: { color: "#cbd5e1", boxWidth: 14, usePointStyle: true },
+            },
+            tooltip: {
+              callbacks: {
+                title: (items) => items[0] ? formatHz(items[0].parsed.x) : "",
+                label: (item) => `${item.dataset.label}: ${item.parsed.y.toFixed(2)} dB`,
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: "logarithmic",
+              min: DEFAULT_START_FREQ,
+              max: DEFAULT_END_FREQ,
+              grid: { color: "rgba(148, 163, 184, 0.12)" },
+              ticks: {
+                color: "#9aa8bb",
+                callback: (value) => {
+                  return formatHz(Number(value));
+                },
+              },
+              title: { display: true, text: "Generated frequency", color: "#cbd5e1" },
+            },
+            y: {
+              min: -3,
+              max: 12,
+              grid: { color: "rgba(148, 163, 184, 0.12)" },
+              ticks: { color: "#9aa8bb", callback: (value) => `${value} dB` },
+              title: { display: true, text: "Normalized measured Input (approx.)", color: "#cbd5e1" },
+            },
+          },
+        },
+      });
+    }
+
+    async function setupAudio(options = {}) {
+      try {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error("This browser does not expose audio input devices.");
+        }
+
+        stopSignal();
+        if (state.inputStream) {
+          state.inputStream.getTracks().forEach((track) => track.stop());
+        }
+
+        state.audio = state.audio || new (window.AudioContext || window.webkitAudioContext)();
+        await state.audio.resume();
+
+        let deviceId = els.inputDevice.value;
+        const constraints = {
+          audio: {
+            deviceId: deviceId ? { exact: deviceId } : undefined,
+            echoCancellation: false,
+            noiseSuppression: false,
+            autoGainControl: false,
+            channelCount: 2,
+          },
+        };
+
+        state.inputStream = await navigator.mediaDevices.getUserMedia(constraints);
+        await enumerateDevices();
+
+        if (options.preferFirstDevices) {
+          const firstInputId = selectFirstDevice(els.inputDevice);
+          selectFirstDevice(els.outputDevice);
+          if (firstInputId && firstInputId !== deviceId) {
+            state.inputStream.getTracks().forEach((track) => track.stop());
+            deviceId = firstInputId;
+            state.inputStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                deviceId: { exact: deviceId },
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+                channelCount: 2,
+              },
+            });
+          }
+        } else if (deviceId) {
+          els.inputDevice.value = deviceId;
+        }
+
+        connectInputGraph();
+        setupOutputRouting();
+        startMeters();
+        await learnNoiseFloor();
+        setBusy(false);
+        els.routeNote.textContent = state.outputAudio?.setSinkId
+          ? "Selected output devices are supported in this browser."
+          : "This browser will use the system default output device.";
+      } catch (error) {
+        setStatus(error.message, "error");
+        setBusy(false);
+      }
+    }
+
+    function inputNoiseKey() {
+      return `${els.inputDevice.value || "default"}:${els.inputChannel.value}`;
+    }
+
+    function connectInputGraph() {
+      const audio = state.audio;
+      state.source?.disconnect();
+      state.splitter?.disconnect();
+      state.inputGain?.disconnect();
+
+      state.source = audio.createMediaStreamSource(state.inputStream);
+      state.splitter = audio.createChannelSplitter(2);
+      state.inputGain = audio.createGain();
+      state.analyser = audio.createAnalyser();
+      state.analyser.fftSize = FFT_SIZE;
+      state.analyser.smoothingTimeConstant = 0.15;
+
+      state.source.connect(state.splitter);
+      connectSelectedInputChannel();
+      state.inputGain.connect(state.analyser);
+      state.sampleBuffer = new Float32Array(state.analyser.fftSize);
+    }
+
+    function connectSelectedInputChannel() {
+      if (!state.splitter || !state.inputGain) return;
+      state.splitter.disconnect();
+      const channel = els.inputChannel.value;
+      if (channel === "mix") {
+        const mergerGain = state.audio.createGain();
+        mergerGain.gain.value = 0.5;
+        state.splitter.connect(mergerGain, 0);
+        state.splitter.connect(mergerGain, 1);
+        mergerGain.connect(state.inputGain);
+      } else {
+        state.splitter.connect(state.inputGain, Number(channel));
+      }
+    }
+
+    function subtractNoiseFloor(level, floor = state.activeNoiseFloor) {
+      const noise = floor || 0;
+      if (!noise || level <= 0) return level;
+      // Audio powers add, so remove the learned floor in power space and then
+      // convert back to an RMS-like amplitude for dB conversion.
+      return Math.sqrt(Math.max(0, level * level - noise * noise));
+    }
+
+    async function learnNoiseFloor() {
+      if (!state.analyser || !state.sampleBuffer || state.isSweeping) return;
+
+      if (state.oscillator) {
+        state.isTesting = false;
+        stopSignal();
+        els.testBtn.innerHTML = '<i data-lucide="audio-lines"></i> Test Signal';
+        lucide.createIcons();
+      }
+
+      const calibrationId = ++state.noiseCalibrationId;
+      setStatus("Learning noise floor");
+      await sleep(120);
+
+      let powerSum = 0;
+      const samples = 14;
+      for (let i = 0; i < samples; i += 1) {
+        if (calibrationId !== state.noiseCalibrationId) return;
+        state.analyser.getFloatTimeDomainData(state.sampleBuffer);
+        const rms = rmsFromBuffer(state.sampleBuffer);
+        powerSum += rms * rms;
+        await sleep(25);
+      }
+
+      const floor = Math.sqrt(powerSum / samples);
+      state.activeNoiseFloor = floor;
+      state.noiseFloors.set(inputNoiseKey(), floor);
+      setStatus(`Noise floor ${gainToDb(floor).toFixed(1)} dBFS`, "ok");
+    }
+
+    function setupOutputRouting() {
+      const audio = state.audio;
+      state.outputDestination?.disconnect?.();
+      state.outputDestination = audio.createMediaStreamDestination();
+      state.outputAudio = state.outputAudio || new Audio();
+      state.outputAudio.autoplay = true;
+      state.outputAudio.srcObject = state.outputDestination.stream;
+      routeOutputDevice();
+    }
+
+    async function routeOutputDevice() {
+      if (!state.outputAudio?.setSinkId) return;
+      try {
+        await state.outputAudio.setSinkId(els.outputDevice.value);
+        await state.outputAudio.play();
+      } catch (error) {
+        setStatus(`Output routing failed: ${error.message}`, "error");
+      }
+    }
+
+    function createSignal(frequency) {
+      stopSignal();
+      const audio = state.audio;
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      const merger = audio.createChannelMerger(2);
+      const analyser = audio.createAnalyser();
+
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      gain.gain.value = compensatedGain(frequency);
+      analyser.fftSize = 1024;
+
+      state.outputAudio?.play?.().catch(() => {});
+      oscillator.connect(gain);
+      connectOutputChannel(gain, merger);
+      merger.connect(analyser);
+      analyser.connect(state.outputDestination);
+      oscillator.start();
+
+      state.oscillator = oscillator;
+      state.generatorGain = gain;
+      state.outputMerger = merger;
+      state.outputAnalyser = analyser;
+      state.outputBuffer = new Float32Array(analyser.fftSize);
+    }
+
+    function connectOutputChannel(gain, merger) {
+      const channel = els.outputChannel.value;
+      if (channel === "both") {
+        gain.connect(merger, 0, 0);
+        gain.connect(merger, 0, 1);
+      } else {
+        gain.connect(merger, 0, Number(channel));
+      }
+    }
+
+    function compensatedGain(frequency) {
+      // The output attenuation slider sets the complete per-octave rolloff.
+      // At 0 dB/oct the sweep output is flat; at 6 dB/oct voltage gain halves
+      // whenever frequency doubles above the sweep start frequency.
+      const attenuationPerOctave = Number(els.outputAttenuation.value);
+      const { start } = getFrequencySettings();
+      const octavesAboveStart = Math.max(0, Math.log2(frequency / start));
+      return 0.42 * dbToGain(-(attenuationPerOctave * octavesAboveStart));
+    }
+
+    function rampSignalTo(frequency, seconds) {
+      const now = state.audio.currentTime;
+      state.oscillator.frequency.cancelScheduledValues(now);
+      state.generatorGain.gain.cancelScheduledValues(now);
+      state.oscillator.frequency.setValueAtTime(state.oscillator.frequency.value, now);
+      state.generatorGain.gain.setValueAtTime(state.generatorGain.gain.value, now);
+      state.oscillator.frequency.exponentialRampToValueAtTime(frequency, now + seconds);
+      state.generatorGain.gain.linearRampToValueAtTime(compensatedGain(frequency), now + seconds);
+    }
+
+    function stopSignal() {
+      if (state.oscillator) {
+        try { state.oscillator.stop(); } catch (_) {}
+      }
+      state.oscillator?.disconnect();
+      state.generatorGain?.disconnect();
+      state.outputMerger?.disconnect();
+      state.outputAnalyser?.disconnect();
+      state.outputAudio?.pause?.();
+      state.oscillator = null;
+      state.generatorGain = null;
+      state.outputMerger = null;
+      state.outputAnalyser = null;
+    }
+
+    function rmsFromBuffer(buffer) {
+      let sum = 0;
+      for (let i = 0; i < buffer.length; i += 1) sum += buffer[i] * buffer[i];
+      return Math.sqrt(sum / buffer.length);
+    }
+
+    function sineMagnitudeAt(buffer, sampleRate, frequency) {
+      // Lock-in style detector: project the captured signal onto sine and cosine references
+      // at the generated frequency. Broadband noise and harmonics mostly average toward zero.
+      let sinSum = 0;
+      let cosSum = 0;
+      const step = (2 * Math.PI * frequency) / sampleRate;
+      for (let i = 0; i < buffer.length; i += 1) {
+        const phase = step * i;
+        sinSum += buffer[i] * Math.sin(phase);
+        cosSum += buffer[i] * Math.cos(phase);
+      }
+      return (2 / buffer.length) * Math.hypot(sinSum, cosSum) / Math.SQRT2;
+    }
+
+    function readInputDb(frequency) {
+      if (!state.analyser) return MIN_DB;
+      state.analyser.getFloatTimeDomainData(state.sampleBuffer);
+      const sineOnly = els.sineFilter.checked;
+      const level = sineOnly
+        ? sineMagnitudeAt(state.sampleBuffer, state.audio.sampleRate, frequency)
+        : rmsFromBuffer(state.sampleBuffer);
+      const detectorNoise = sineOnly
+        ? state.activeNoiseFloor * Math.sqrt(2 / state.sampleBuffer.length)
+        : state.activeNoiseFloor;
+      return gainToDb(subtractNoiseFloor(level, detectorNoise)) + Number(els.calibration.value);
+    }
+
+    function smoothMeasurements(points) {
+      if (!points.length) return [];
+      const smoothness = Number(els.smoothness.value);
+      const radius = Math.max(1, Math.round(smoothness * 1.5));
+      const sigma = Math.max(1, radius / 2);
+      return points.map((point, index) => {
+        let sum = 0;
+        let weightSum = 0;
+        for (let offset = -radius; offset <= radius; offset += 1) {
+          const neighbor = points[index + offset];
+          if (!neighbor) continue;
+          // Gaussian weighting makes the average curve progressively smoother
+          // without letting distant points dominate local resonant peaks.
+          const weight = Math.exp(-(offset * offset) / (2 * sigma * sigma));
+          sum += neighbor.rawDb * weight;
+          weightSum += weight;
+        }
+        return { x: point.x, rawDb: sum / weightSum };
+      });
+    }
+
+    function applyMeasurementOffset(points, startReference = getFrequencySettings().start) {
+      const offsetPerOctave = Number(els.measurementOffset.value);
+      return points.map((point) => ({
+        x: point.x,
+        // Positive per-octave offset tilts the measured response upward as frequency
+        // increases. The selected start frequency is the reference point; the
+        // 300 Hz pre-scan lead-in is measured but hidden in the final graph.
+        rawDb: point.rawDb + offsetPerOctave * Math.log2(point.x / startReference),
+      }));
+    }
+
+    function normalizeAtStart(points, startFrequency) {
+      if (!points.length) return [];
+      const sorted = [...points].sort((a, b) => a.x - b.x);
+      const reference = sorted.find((point) => point.x >= startFrequency) || sorted[0];
+      return points.map((point) => ({ x: point.x, y: (point.rawDb - reference.rawDb) / 3 }));
+    }
+
+    function buildAverage(points, startReference, finalOnly, baselineFrequency = startReference) {
+      const offset = applyMeasurementOffset(points, baselineFrequency);
+      const smooth = smoothMeasurements(offset);
+      const visible = finalOnly ? smooth.filter((point) => point.x >= baselineFrequency) : smooth;
+      return normalizeAtStart(visible, baselineFrequency);
+    }
+
+    function lineDataset(label, data, color, width = 3) {
+      return {
+        label,
+        data,
+        parsing: false,
+        borderColor: color,
+        backgroundColor: color,
+        pointRadius: 0,
+        borderWidth: width,
+        tension: 0.34,
+      };
+    }
+
+    function pointDataset(label, data, color) {
+      return {
+        label,
+        data,
+        parsing: false,
+        borderColor: color,
+        backgroundColor: color,
+        pointRadius: 2.8,
+        pointHoverRadius: 4,
+        showLine: false,
+      };
+    }
+
+    function peakFromCurve(curve) {
+      if (!curve.length) return null;
+      return curve.reduce((best, point) => point.y > best.y ? point : best, curve[0]);
+    }
+
+    function activePeakCurve() {
+      const { start } = getFrequencySettings();
+      if (!state.activePeakSource) return [];
+      if (state.activePeakSource.type === "current") {
+        return buildAverage(state.chartData, start, true);
+      }
+      if (state.activePeakSource.type === "slot") {
+        const slot = state.slots[state.activePeakSource.index];
+        if (!slot?.visible || !slot.points.length) return [];
+        return buildAverage(slot.points, start, true, start);
+      }
+      return [];
+    }
+
+    function updatePeakReadout() {
+      const peak = peakFromCurve(activePeakCurve());
+      els.peakReadout.textContent = peak ? `${formatHz(peak.x)} / ${peak.y.toFixed(2)} dB` : "--";
+    }
+
+    function updateChart(final = false) {
+      if (!state.chart) return;
+      if (final) state.showFinalAverageOnly = true;
+      const { start, end, scanStart } = getFrequencySettings();
+      const finalView = state.showFinalAverageOnly;
+      const offsetMeasurements = applyMeasurementOffset(state.chartData, start);
+      const visibleMeasurements = finalView ? [] : offsetMeasurements.filter((point) => point.x >= start);
+      const normalizedMeasurements = normalizeAtStart(visibleMeasurements, start);
+      const currentAverage = buildAverage(state.chartData, start, finalView);
+      const datasets = [];
+
+      // Keep live measurement points hidden by default; the red average line remains visible.
+      if (currentAverage.length) {
+        datasets.push(lineDataset("Current measurement", currentAverage, CURRENT_COLOR, 3.5));
+      }
+
+      state.slots.forEach((slot, index) => {
+        if (!slot.visible || !slot.points.length) return;
+        const slotAverage = buildAverage(slot.points, start, true, start);
+        if (slotAverage.length) {
+          datasets.push(lineDataset(slot.name || `Slot ${index + 1}`, slotAverage, slot.color, 2.6));
+        }
+      });
+
+      state.smoothData = currentAverage;
+      state.chart.data.datasets = datasets;
+      const clampToSelectedStart = finalView || state.isSweeping || state.activePeakSource?.type === "slot";
+      const visibleSlotEnds = state.slots
+        .filter((slot) => slot.visible && slot.points.length)
+        .map((slot) => slot.end || end);
+      state.chart.options.scales.x.min = clampToSelectedStart ? start : scanStart;
+      state.chart.options.scales.x.max = Math.max(end, ...visibleSlotEnds);
+
+      const allY = datasets.flatMap((dataset) => dataset.data.map((point) => point.y)).filter(Number.isFinite);
+      if (allY.length) {
+        const min = Math.min(...allY);
+        const max = Math.max(...allY);
+        const margin = Math.max(1.5, (max - min) * 0.12);
+        state.chart.options.scales.y.min = Math.floor(min - margin);
+        state.chart.options.scales.y.max = Math.ceil(max + margin);
+      }
+
+      updatePeakReadout();
+
+      state.chart.update("none");
+    }
+
+    function startMeters() {
+      cancelAnimationFrame(state.meterFrame);
+      const tick = () => {
+        if (state.analyser && state.sampleBuffer) {
+          state.analyser.getFloatTimeDomainData(state.sampleBuffer);
+          const inputDb = gainToDb(subtractNoiseFloor(rmsFromBuffer(state.sampleBuffer))) + Number(els.calibration.value);
+          drawMeter(els.inputMeter, els.inputDb, inputDb);
+        }
+        if (state.outputAnalyser && state.outputBuffer) {
+          state.outputAnalyser.getFloatTimeDomainData(state.outputBuffer);
+          drawMeter(els.outputMeter, els.outputDb, gainToDb(rmsFromBuffer(state.outputBuffer)));
+        } else {
+          drawMeter(els.outputMeter, els.outputDb, MIN_DB);
+        }
+        state.meterFrame = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    function drawMeter(bar, label, db) {
+      const safeDb = clamp(db, MIN_DB, 0);
+      const normalized = (safeDb - MIN_DB) / Math.abs(MIN_DB);
+      bar.style.transform = `scaleX(${clamp(normalized, 0, 1)})`;
+      label.textContent = safeDb <= MIN_DB + 0.5 ? "-∞ dBFS" : `${safeDb.toFixed(1)} dBFS`;
+    }
+
+    async function runTestTone() {
+      if (!state.audio) return;
+      await state.audio.resume();
+      if (state.isTesting) {
+        state.isTesting = false;
+        stopSignal();
+        els.testBtn.innerHTML = '<i data-lucide="audio-lines"></i> Test Signal';
+        lucide.createIcons();
+        setBusy(false);
+        setStatus("Audio ready", "ok");
+        return;
+      }
+      state.isTesting = true;
+      setBusy(true);
+      els.testBtn.disabled = false;
+      els.stopBtn.disabled = false;
+      els.stopBtn.classList.toggle("button-danger-active", state.isSweeping);
+      createSignal(1000);
+      els.freqReadout.textContent = "1.00 kHz";
+      els.testBtn.innerHTML = '<i data-lucide="pause"></i> Stop test';
+      lucide.createIcons();
+      setStatus("Playing test tone");
+    }
+
+    async function runSweep() {
+      if (!state.audio || state.isSweeping) return;
+      await state.audio.resume();
+      state.abort = false;
+      state.isSweeping = true;
+      state.chartData = [];
+      state.smoothData = [];
+      state.showFinalAverageOnly = false;
+      els.peakReadout.textContent = "--";
+      setBusy(true);
+      setStatus("Sweeping", "sweeping");
+      updateChart();
+
+      let completed = false;
+      try {
+        const { end, scanStart } = getFrequencySettings();
+        const durationMs = Number(els.duration.value) * 1000;
+        const readings = Number(els.readings.value);
+        const pointMs = durationMs / POINT_COUNT;
+        const readingMs = Math.max(4, pointMs / readings);
+        createSignal(scanStart);
+        await sleep(Math.min(120, pointMs * 0.4));
+
+        for (let i = 0; i < POINT_COUNT && !state.abort; i += 1) {
+          const frequency = frequencyAt(i, scanStart, end);
+          const nextFrequency = frequencyAt(Math.min(i + 1, POINT_COUNT - 1), scanStart, end);
+          rampSignalTo(frequency, Math.min(0.035, pointMs / 3000));
+          els.freqReadout.textContent = formatHz(frequency);
+          const isCalibrating = frequency < getFrequencySettings().start;
+          setStatus(isCalibrating ? "Calibrating" : "Sweeping", isCalibrating ? "calibrating" : "sweeping");
+
+          const values = [];
+          for (let r = 0; r < readings && !state.abort; r += 1) {
+            await sleep(readingMs);
+            values.push(readInputDb(frequency));
+            if (r === Math.floor(readings / 2)) {
+              rampSignalTo(nextFrequency, Math.max(0.004, (pointMs - r * readingMs) / 1000));
+            }
+          }
+
+          if (!values.length) break;
+          const averageDb = values.reduce((sum, value) => sum + value, 0) / values.length;
+          state.chartData.push({ x: frequency, rawDb: averageDb });
+          els.progressReadout.textContent = `${Math.round(((i + 1) / POINT_COUNT) * 100)}%`;
+          updateChart(false);
+        }
+
+        completed = !state.abort;
+      } finally {
+        stopSignal();
+        state.isSweeping = false;
+        setBusy(false);
+      }
+
+      if (!completed) {
+        setStatus("Stopped");
+      } else {
+        els.freqReadout.textContent = "-- Hz";
+        els.progressReadout.textContent = "100%";
+        state.activePeakSource = { type: "current" };
+        updateChart(true);
+        setStatus("Sweep complete", "ok");
+      }
+    }
+
+    function stopAll() {
+      state.abort = true;
+      state.isTesting = false;
+      stopSignal();
+      setBusy(false);
+      els.testBtn.innerHTML = '<i data-lucide="audio-lines"></i> Test Signal';
+      lucide.createIcons();
+    }
+
+    async function handleInputChannelChange() {
+      connectSelectedInputChannel();
+      state.activeNoiseFloor = state.noiseFloors.get(inputNoiseKey()) || 0;
+      await learnNoiseFloor();
+    }
+
+    function slotRows() {
+      return [...document.querySelectorAll(".slot-row")];
+    }
+
+    function updateSlotUi(index) {
+      const row = document.querySelector(`.slot-row[data-slot="${index}"]`);
+      const slot = state.slots[index];
+      if (!row || !slot) return;
+      const nameInput = row.querySelector(".slot-name");
+      const visibleInput = row.querySelector(".slot-visible");
+      const meta = row.querySelector(".slot-meta");
+      const saveButton = row.querySelector(".slot-save");
+      nameInput.value = slot.name;
+      visibleInput.checked = slot.visible;
+      saveButton.disabled = !slot.points.length;
+      meta.textContent = slot.points.length
+        ? `${slot.points.length} points, ${formatHz(slot.start)} to ${formatHz(slot.end)}`
+        : "Empty";
+    }
+
+    function updateAllSlotUi() {
+      state.slots.forEach((_, index) => updateSlotUi(index));
+    }
+
+    function storeCurrentMeasurement(index) {
+      if (!state.chartData.length) {
+        setStatus("No measurement to store", "error");
+        return;
+      }
+      const { start, end } = getFrequencySettings();
+      const slot = state.slots[index];
+      const row = document.querySelector(`.slot-row[data-slot="${index}"]`);
+      const name = row?.querySelector(".slot-name")?.value.trim() || `Slot ${index + 1}`;
+      slot.name = name;
+      slot.visible = true;
+      slot.start = start;
+      slot.end = end;
+      slot.points = state.chartData.map((point) => ({ x: point.x, rawDb: point.rawDb }));
+      updateSlotUi(index);
+      updateChart();
+      setStatus(`${slot.name} stored`, "ok");
+    }
+
+    function saveSlotToDisk(index) {
+      const slot = state.slots[index];
+      if (!slot?.points.length) {
+        setStatus("Slot is empty", "error");
+        return;
+      }
+
+      const payload = {
+        type: "guitar-pickup-bode-measurement",
+        version: 1,
+        name: slot.name,
+        start: slot.start,
+        end: slot.end,
+        points: slot.points,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "text/plain" });
+      const link = document.createElement("a");
+      const safeName = (slot.name || `slot-${index + 1}`).replace(/[^a-z0-9_-]+/gi, "-").replace(/^-+|-+$/g, "") || `slot-${index + 1}`;
+      link.download = `${safeName}.txt`;
+      link.href = URL.createObjectURL(blob);
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      setStatus(`${slot.name} saved`, "ok");
+    }
+
+    function loadSlotFromDisk(index, file) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const payload = JSON.parse(String(reader.result));
+          if (!Array.isArray(payload.points) || !payload.points.length) {
+            throw new Error("No measurement points found.");
+          }
+          const points = payload.points.map((point) => ({
+            x: Number(point.x),
+            rawDb: Number(point.rawDb),
+          })).filter((point) => Number.isFinite(point.x) && Number.isFinite(point.rawDb));
+          if (!points.length) throw new Error("Measurement points are invalid.");
+
+          const slot = state.slots[index];
+          slot.name = String(payload.name || `Slot ${index + 1}`);
+          slot.start = Number(payload.start) || Math.min(...points.map((point) => point.x));
+          slot.end = Number(payload.end) || Math.max(...points.map((point) => point.x));
+          slot.points = points;
+          slot.visible = true;
+          state.activePeakSource = { type: "slot", index };
+          updateSlotUi(index);
+          updateChart();
+          setStatus(`${slot.name} loaded`, "ok");
+        } catch (error) {
+          setStatus(`Load failed: ${error.message}`, "error");
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function bindSlotControls() {
+      slotRows().forEach((row) => {
+        const index = Number(row.dataset.slot);
+        row.querySelector(".slot-store").addEventListener("click", () => storeCurrentMeasurement(index));
+        row.querySelector(".slot-save").addEventListener("click", () => saveSlotToDisk(index));
+        row.querySelector(".slot-load").addEventListener("click", () => row.querySelector(".slot-file").click());
+        row.querySelector(".slot-file").addEventListener("change", (event) => {
+          loadSlotFromDisk(index, event.target.files[0]);
+          event.target.value = "";
+        });
+        row.querySelector(".slot-visible").addEventListener("change", (event) => {
+          state.slots[index].visible = event.target.checked;
+          if (event.target.checked && state.slots[index].points.length) {
+            state.activePeakSource = { type: "slot", index };
+          }
+          updateChart();
+        });
+        row.querySelector(".slot-name").addEventListener("input", (event) => {
+          state.slots[index].name = event.target.value.trim() || `Slot ${index + 1}`;
+          updateChart();
+        });
+      });
+      updateAllSlotUi();
+    }
+
+    function clearLatestMeasurement() {
+      state.chartData = [];
+      state.smoothData = [];
+      state.showFinalAverageOnly = true;
+      if (state.activePeakSource?.type === "current") {
+        state.activePeakSource = null;
+      }
+      els.freqReadout.textContent = "-- Hz";
+      els.progressReadout.textContent = "0%";
+      updateChart();
+      setStatus("Latest measurement cleared", "ok");
+    }
+
+    function setHelpOpen(isOpen) {
+      els.helpOverlay.classList.toggle("is-open", isOpen);
+    }
+
+    function exportPlotPng() {
+      if (!state.chart) return;
+      const source = state.chart.canvas;
+      const exportCanvas = document.createElement("canvas");
+      const scale = 2;
+      exportCanvas.width = source.width * scale;
+      exportCanvas.height = source.height * scale;
+      const ctx = exportCanvas.getContext("2d");
+      ctx.fillStyle = "#15181f";
+      ctx.fillRect(0, 0, exportCanvas.width, exportCanvas.height);
+      ctx.drawImage(source, 0, 0, exportCanvas.width, exportCanvas.height);
+
+      const link = document.createElement("a");
+      const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+      link.download = `bode-plot-${timestamp}.png`;
+      link.href = exportCanvas.toDataURL("image/png");
+      link.click();
+    }
+
+    els.setupBtn.addEventListener("click", () => setupAudio({ preferFirstDevices: true }));
+    els.testBtn.addEventListener("click", runTestTone);
+    els.sweepBtn.addEventListener("click", runSweep);
+    els.exportBtn.addEventListener("click", exportPlotPng);
+    els.clearBtn.addEventListener("click", clearLatestMeasurement);
+    els.helpBtn.addEventListener("click", () => setHelpOpen(true));
+    els.helpCloseBtn.addEventListener("click", () => setHelpOpen(false));
+    els.helpOverlay.addEventListener("click", (event) => {
+      if (event.target === els.helpOverlay) setHelpOpen(false);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setHelpOpen(false);
+    });
+    els.stopBtn.addEventListener("click", stopAll);
+    els.inputDevice.addEventListener("change", setupAudio);
+    els.outputDevice.addEventListener("change", routeOutputDevice);
+    els.inputChannel.addEventListener("change", handleInputChannelChange);
+    els.startFrequency.addEventListener("change", syncFrequencyInputs);
+    els.endFrequency.addEventListener("change", syncFrequencyInputs);
+    els.startFrequency.addEventListener("input", () => updateChart());
+    els.endFrequency.addEventListener("input", () => updateChart());
+    els.duration.addEventListener("input", updateRangeLabels);
+    els.readings.addEventListener("input", updateRangeLabels);
+    els.smoothness.addEventListener("input", updateRangeLabels);
+    els.calibration.addEventListener("input", updateRangeLabels);
+    els.outputAttenuation.addEventListener("input", updateRangeLabels);
+    els.measurementOffset.addEventListener("input", updateRangeLabels);
+
+    if (navigator.mediaDevices?.addEventListener) {
+      navigator.mediaDevices.addEventListener("devicechange", enumerateDevices);
+    }
+
+    updateRangeLabels();
+    createChart();
+    bindSlotControls();
+    enumerateDevices().catch(() => {});
+    lucide.createIcons();
+  </script>
+</body>
+</html>
