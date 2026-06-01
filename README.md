@@ -90,19 +90,19 @@ It's pretty easy to build.
 
 My everyday coil driver
 
-![IMG_8283 Medium](/Users/nhirt/Library/Mobile Documents/com~apple~CloudDocs/1_DOCS/02_PERSO/10_AI/02_PROJECTS/bodeplotter/screenshots/IMG_8283 Medium.jpeg)
+![IMG_8283 Medium](screenshots/IMG_8283 Medium.jpeg)
 
 
 
 With a pickup hooked up
 
-![IMG_8284 Medium](/Users/nhirt/Library/Mobile Documents/com~apple~CloudDocs/1_DOCS/02_PERSO/10_AI/02_PROJECTS/bodeplotter/screenshots/IMG_8284 Medium.jpeg)
+![IMG_8284 Medium](screenshots/IMG_8284 Medium.jpeg)
 
 
 
 The inside
 
-![IMG_8285 Medium](/Users/nhirt/Library/Mobile Documents/com~apple~CloudDocs/1_DOCS/02_PERSO/10_AI/02_PROJECTS/bodeplotter/screenshots/IMG_8285 Medium.jpeg)
+![IMG_8285 Medium](screenshots/IMG_8285 Medium.jpeg)
 
 
 
