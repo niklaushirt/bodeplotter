@@ -1,4 +1,4 @@
-# Nick's Guitar Pickup Bode Plotter - Latest3 Implementation Spec
+# Nick's Guitar Pickup Bode Plotter - Latest4 Implementation Spec
 
 Implement the app as one self-contained `index.html` file with inline HTML, CSS, and JavaScript. Use CDN scripts only for:
 
@@ -209,10 +209,12 @@ During the pre-start lead-in:
 - Keep generating and measuring.
 - Do not show frequencies below selected start frequency on the graph.
 - Status `Calibrating`, colored orange.
+- Current frequency readout must show `Calibrating` in red instead of the generated frequency.
 
 At/above selected start:
 
 - Status `Sweeping`, colored red.
+- Current frequency readout switches back to the actual generated frequency.
 
 Use `try/finally` so completed or aborted sweep always stops the generator and pauses audio output.
 
@@ -447,6 +449,7 @@ Bottom links/text:
 - Visible labels include `Enable Audio`, `Test Signal`, `START SWEEP`, `Clear Latest`, `Sine-only filter`, `Scan Durtation`, `Graph smoothness`, `Graph offset`.
 - START SWEEP is orange and Stop is immediately to its right.
 - Stop button turns red only while a sweep is running.
+- During pre-start calibration, Current frequency readout shows red `Calibrating`.
 - Help overlay contains all seven steps, two links, and copyright line.
 - Calibrating status is orange; Sweeping status is red.
 - Current points are hidden by default while measuring.

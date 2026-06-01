@@ -288,6 +288,10 @@
       color: var(--accent-2);
     }
 
+    .readout-value-danger {
+      color: #ff647c;
+    }
+
     .status-value {
       color: #e2e8f0;
       font-size: 0.9rem;
@@ -1537,8 +1541,9 @@
           const frequency = frequencyAt(i, scanStart, end);
           const nextFrequency = frequencyAt(Math.min(i + 1, POINT_COUNT - 1), scanStart, end);
           rampSignalTo(frequency, Math.min(0.035, pointMs / 3000));
-          els.freqReadout.textContent = formatHz(frequency);
           const isCalibrating = frequency < getFrequencySettings().start;
+          els.freqReadout.textContent = isCalibrating ? "Calibrating" : formatHz(frequency);
+          els.freqReadout.classList.toggle("readout-value-danger", isCalibrating);
           setStatus(isCalibrating ? "Calibrating" : "Sweeping", isCalibrating ? "calibrating" : "sweeping");
 
           const values = [];
@@ -1565,9 +1570,11 @@
       }
 
       if (!completed) {
+        els.freqReadout.classList.remove("readout-value-danger");
         setStatus("Stopped");
       } else {
         els.freqReadout.textContent = "-- Hz";
+        els.freqReadout.classList.remove("readout-value-danger");
         els.progressReadout.textContent = "100%";
         state.activePeakSource = { type: "current" };
         updateChart(true);
@@ -1580,6 +1587,7 @@
       state.isTesting = false;
       stopSignal();
       setBusy(false);
+      els.freqReadout.classList.remove("readout-value-danger");
       els.testBtn.innerHTML = '<i data-lucide="audio-lines"></i> Test Signal';
       lucide.createIcons();
     }
