@@ -116,35 +116,44 @@
 
   .btn svg { flex-shrink: 0; }
 
-  /* Main layout */
+  /* Main layout — settings columns always fixed width, graph always full width below */
   .main-grid {
     display: grid;
-    grid-template-columns: 280px 330px minmax(0, 1fr) 300px;
-    gap: 0;
+    grid-template-columns: 280px 330px 1fr;
+    grid-template-areas:
+      "col1 col2 slots"
+      "graph graph graph";
     padding: 12px;
     gap: 10px;
     align-items: start;
   }
 
-  /* Responsive */
-  @media (max-width: 1500px) and (min-width: 1121px) {
+  .col-left     { grid-area: col1; display: flex; flex-direction: column; gap: 10px; }
+  .col-settings { grid-area: col2; display: flex; flex-direction: column; gap: 10px; }
+  .col-graph    { grid-area: graph; }
+  .col-slots    { grid-area: slots; }
+
+  /* Slots move below graph when only two settings columns fit (≈ iPad portrait) */
+  @media (max-width: 939px) {
     .main-grid {
-      grid-template-columns: 280px minmax(0, 1fr) 300px;
+      grid-template-columns: 280px 1fr;
+      grid-template-areas:
+        "col1 col2"
+        "graph graph"
+        "slots slots";
     }
-    .col-left { display: flex; flex-direction: column; gap: 10px; }
-    .col-settings { display: flex; flex-direction: column; gap: 10px; }
   }
 
-  @media (max-width: 1120px) and (min-width: 721px) {
+  /* Single column on phone */
+  @media (max-width: 639px) {
     .main-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto auto;
+      grid-template-columns: 1fr;
+      grid-template-areas:
+        "col1"
+        "col2"
+        "graph"
+        "slots";
     }
-    .col-graph { grid-column: 1 / -1; }
-  }
-
-  @media (max-width: 720px) {
-    .main-grid { grid-template-columns: 1fr; }
   }
 
   /* Panels */
@@ -376,22 +385,28 @@
 
   .chart-wrap {
     position: relative;
-    min-height: 860px;
+    min-height: 520px;
   }
 
-  @media (max-width: 720px) {
-    .chart-wrap { min-height: 520px; }
+  @media (max-width: 639px) {
+    .chart-wrap { min-height: 380px; }
   }
 
   .chart-wrap canvas { width: 100% !important; height: 100% !important; }
 
   /* Slots */
+  #slotList {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+  }
+
   .slot {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 5px;
     padding: 8px 10px;
-    margin-bottom: 7px;
+    margin-bottom: 0;
   }
 
   .slot-header {
