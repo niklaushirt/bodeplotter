@@ -48,6 +48,25 @@
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 12px 16px;
+    position: relative;
+  }
+
+  .header-logo {
+    position: absolute;
+    top: 10px;
+    right: 16px;
+    height: 90px;
+    width: auto;
+    /* dark bg: invert black→white, keep contrast */
+    filter: invert(1);
+    opacity: 0.85;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  body.light .header-logo {
+    filter: none;
+    opacity: 0.9;
   }
 
   .header h1 {
@@ -121,8 +140,8 @@
     display: grid;
     grid-template-columns: 280px 330px 1fr;
     grid-template-areas:
-      "col1 col2 slots"
-      "graph graph graph";
+      "graph graph graph"
+      "col1 col2 slots";
     padding: 12px;
     gap: 10px;
     align-items: start;
@@ -138,8 +157,8 @@
     .main-grid {
       grid-template-columns: 280px 1fr;
       grid-template-areas:
-        "col1 col2"
         "graph graph"
+        "col1 col2"
         "slots slots";
     }
   }
@@ -149,9 +168,9 @@
     .main-grid {
       grid-template-columns: 1fr;
       grid-template-areas:
+        "graph"
         "col1"
         "col2"
-        "graph"
         "slots";
     }
   }
@@ -258,6 +277,60 @@
     width: 14px;
     height: 14px;
     cursor: pointer;
+  }
+
+  /* Meters bar — full-width strip between header and grid */
+  .meters-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    padding: 8px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .meters-bar .meter-block,
+  .meters-bar .status-block,
+  .meters-bar .status-bar,
+  .meters-bar .peak-block {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .meters-bar .status-bar {
+    display: flex;
+    align-items: center;
+    min-width: 120px;
+  }
+
+  .meters-bar .peak-block {
+    min-width: 120px;
+  }
+
+  .meters-bar .meter-label,
+  .meters-bar .status-label,
+  .meters-bar .peak-label {
+    font-size: 12px;
+    letter-spacing: 0.08em;
+  }
+
+  .meters-bar .meter-value,
+  .meters-bar .status-value {
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  .meters-bar .peak-value {
+    font-size: 22px;
+    line-height: 1.1;
+  }
+
+  .meters-bar #peakResponse {
+    font-size: 18px !important;
+  }
+
+  .meters-bar .status-bar {
+    font-size: 15px;
   }
 
   /* Meters */
@@ -385,14 +458,46 @@
 
   .chart-wrap {
     position: relative;
-    min-height: 520px;
+    height: 364px;
   }
 
   @media (max-width: 639px) {
-    .chart-wrap { min-height: 380px; }
+    .chart-wrap { height: 265px; }
   }
 
   .chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+  .chart-resize-handle {
+    height: 7px;
+    cursor: ns-resize;
+    background: transparent;
+    border-top: 2px solid var(--border);
+    border-radius: 0 0 7px 7px;
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+  }
+
+  .chart-resize-handle:hover,
+  .chart-resize-handle.dragging {
+    border-color: var(--accent);
+  }
+
+  .chart-resize-handle::after {
+    content: '';
+    width: 36px;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    transition: background 0.15s;
+  }
+
+  .chart-resize-handle:hover::after,
+  .chart-resize-handle.dragging::after {
+    background: var(--accent);
+  }
 
   /* Slots */
   #slotList {
@@ -535,6 +640,7 @@
 
 <!-- Header -->
 <div class="header">
+  <img class="header-logo" src="logo.png" alt="Logo">
   <h1>Nick's Guitar Pickup Bode Plotter</h1>
   <p class="subtitle">Sweep a compensated sine signal through a pickup test rig, measure the soundcard input, and plot the normalized frequency response.</p>
   <div class="header-buttons">
@@ -565,50 +671,41 @@
   </div>
 </div>
 
+<!-- Meters bar -->
+<div class="meters-bar">
+  <div class="meter-block">
+    <div class="meter-label">Input</div>
+    <div class="meter-value" id="meterInVal">-- dBFS</div>
+    <div class="meter-bar-bg"><div class="meter-bar" id="meterInBar"></div></div>
+  </div>
+  <div class="meter-block">
+    <div class="meter-label">Output</div>
+    <div class="meter-value" id="meterOutVal">-- dBFS</div>
+    <div class="meter-bar-bg"><div class="meter-bar" id="meterOutBar"></div></div>
+  </div>
+  <div class="status-block">
+    <div class="status-label">Current freq</div>
+    <div class="status-value" id="currentFreq">-- Hz</div>
+  </div>
+  <div class="status-block">
+    <div class="status-label">Progress</div>
+    <div class="status-value" id="progress">0%</div>
+  </div>
+  <div class="status-bar" id="statusBar">Audio not enabled</div>
+  <div class="peak-block">
+    <div class="peak-label">Peak Response</div>
+    <div style="text-align:right;">
+      <div class="peak-value" id="peakFreq"></div>
+      <div style="font-size:13px;font-weight:600;color:var(--accent-2);font-variant-numeric:tabular-nums;" id="peakResponse">--</div>
+    </div>
+  </div>
+</div>
+
 <!-- Main grid -->
 <div class="main-grid">
 
-  <!-- Column 1: Meters + Audio Routing -->
+  <!-- Column 1: Audio Routing -->
   <div class="col-left" style="display:flex;flex-direction:column;gap:10px;">
-
-    <!-- Meters panel -->
-    <div class="panel">
-      <div class="panel-title">Meters</div>
-
-      <div class="meter-row">
-        <div class="meter-block">
-          <div class="meter-label">Input</div>
-          <div class="meter-value" id="meterInVal">-- dBFS</div>
-          <div class="meter-bar-bg"><div class="meter-bar" id="meterInBar"></div></div>
-        </div>
-        <div class="meter-block">
-          <div class="meter-label">Output</div>
-          <div class="meter-value" id="meterOutVal">-- dBFS</div>
-          <div class="meter-bar-bg"><div class="meter-bar" id="meterOutBar"></div></div>
-        </div>
-      </div>
-
-      <div class="status-row">
-        <div class="status-block">
-          <div class="status-label">Current freq</div>
-          <div class="status-value" id="currentFreq">-- Hz</div>
-        </div>
-        <div class="status-block">
-          <div class="status-label">Progress</div>
-          <div class="status-value" id="progress">0%</div>
-        </div>
-      </div>
-
-      <div class="status-bar" id="statusBar">Audio not enabled</div>
-
-      <div class="peak-block">
-        <div class="peak-label">Peak Response</div>
-        <div style="text-align:right;">
-          <div class="peak-value" id="peakFreq"></div>
-          <div style="font-size:13px;font-weight:600;color:var(--accent-2);font-variant-numeric:tabular-nums;" id="peakResponse">--</div>
-        </div>
-      </div>
-    </div>
 
     <!-- Audio Routing panel -->
     <div class="panel">
@@ -681,17 +778,8 @@
         <input type="range" id="readingsPerPoint" min="1" max="50" step="1" value="15">
         <span class="range-val" id="readingsPerPointVal">15</span>
 
-        <label>Input sensitivity</label>
-        <input type="range" id="inputSensitivity" min="-24" max="24" step="0.5" value="0">
-        <span class="range-val" id="inputSensVal">0 dB</span>
+   
 
-        <label>Output attenuation</label>
-        <input type="range" id="outputAttenuation" min="0" max="6" step="0.1" value="6">
-        <span class="range-val" id="outputAttenVal">6 dB/oct</span>
-
-        <label>Sine-only filter</label>
-        <input type="checkbox" id="sineOnly" style="justify-self:start;margin-top:3px;">
-        <span></span>
       </div>
     </div>
 
@@ -714,9 +802,10 @@
   <div class="col-graph">
     <div class="panel">
       <div class="panel-title">Bode Plot</div>
-      <div class="chart-wrap">
+      <div class="chart-wrap" id="chartWrap">
         <canvas id="bodeChart"></canvas>
       </div>
+      <div class="chart-resize-handle" id="chartResizeHandle"></div>
     </div>
   </div>
 
@@ -920,7 +1009,7 @@ function buildInputGraph() {
   sourceNode  = audioCtx.createMediaStreamSource(inputStream);
   splitterNode = audioCtx.createChannelSplitter(2);
   inputGainNode = audioCtx.createGain();
-  inputGainNode.gain.value = dbToGain(parseFloat(document.getElementById('inputSensitivity').value));
+  inputGainNode.gain.value = dbToGain(0);
   analyserNode = audioCtx.createAnalyser();
   analyserNode.fftSize = FFT_SIZE;
   analyserNode.smoothingTimeConstant = 0.15;
@@ -1133,9 +1222,9 @@ async function startSweep() {
   const end      = parseInt(document.getElementById('endFreq').value)      || DEFAULT_END_FREQ;
   const duration = parseFloat(document.getElementById('scanDuration').value) || 10;
   const readings = parseInt(document.getElementById('readingsPerPoint').value) || 15;
-  const sineOnly = document.getElementById('sineOnly').checked;
-  const atten    = parseFloat(document.getElementById('outputAttenuation').value);
-  const sens     = parseFloat(document.getElementById('inputSensitivity').value);
+  const sineOnly = false;
+  const atten    = 6.0;
+  const sens     = 0;
 
   const scanStart = Math.max(20, start - PRESCAN_HZ);
   const points    = logspace(scanStart, end, POINT_COUNT);
@@ -1305,11 +1394,7 @@ function onOutputChannelChange() {
 }
 
 // ─── Input sensitivity ────────────────────────────────────────────────────────
-document.getElementById('inputSensitivity').addEventListener('input', e => {
-  const v = parseFloat(e.target.value);
-  document.getElementById('inputSensVal').textContent = `${v >= 0 ? '+' : ''}${v} dB`;
-  if (inputGainNode) inputGainNode.gain.value = dbToGain(v);
-});
+
 
 document.getElementById('scanDuration').addEventListener('input', e => {
   document.getElementById('scanDurationVal').textContent = `${e.target.value} s`;
@@ -1319,10 +1404,6 @@ document.getElementById('readingsPerPoint').addEventListener('input', e => {
   document.getElementById('readingsPerPointVal').textContent = e.target.value;
 });
 
-document.getElementById('outputAttenuation').addEventListener('input', e => {
-  const v = parseFloat(e.target.value);
-  document.getElementById('outputAttenVal').textContent = `${v.toFixed(1)} dB/oct`;
-});
 
 document.getElementById('graphSmoothness').addEventListener('input', e => {
   document.getElementById('smoothnessVal').textContent = e.target.value;
@@ -1430,8 +1511,10 @@ function processData(rawPoints, startHz) {
   });
 
   // 3. Already filtered above start. 4. Normalize to first point
+  // Do NOT DIVIDE BY 3 ANYMORE
   const base = pts[0].y;
-  pts = pts.map(p => ({ x: p.x, y: (p.y - base) / 3 }));
+  //pts = pts.map(p => ({ x: p.x, y: (p.y - base) / 3 }));
+  pts = pts.map(p => ({ x: p.x, y: (p.y - base) / 1 }));
 
   return pts;
 }
@@ -1748,6 +1831,38 @@ function logspace(start, end, n) {
   }
   return pts;
 }
+
+// ─── Chart resize handle ──────────────────────────────────────────────────────
+(function() {
+  const handle = document.getElementById('chartResizeHandle');
+  const wrap   = document.getElementById('chartWrap');
+  let startY, startH;
+
+  handle.addEventListener('mousedown', e => {
+    startY = e.clientY;
+    startH = wrap.getBoundingClientRect().height;
+    handle.classList.add('dragging');
+    document.body.style.cursor = 'ns-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(e) {
+      const h = Math.max(120, startH + (e.clientY - startY));
+      wrap.style.height = h + 'px';
+      if (bodeChart) bodeChart.resize();
+    }
+
+    function onUp() {
+      handle.classList.remove('dragging');
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+})();
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 initChart();
