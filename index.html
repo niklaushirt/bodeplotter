@@ -7,671 +7,581 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-  :root {
-    --accent: #004cfc;
-    --accent-2: #ff9c00;
-    --bg: #0f1117;
-    --surface: #15181f;
-    --surface2: #1e2230;
-    --border: #2a2f3f;
-    --text: #d4d8e8;
-    --text-dim: #7a8099;
-    --red: #ff3b4f;
-    --green: #35d0a2;
-  }
+:root {
+  --accent:   #004cfc;
+  --accent-2: #ff9c00;
+  --bg:       #0f1117;
+  --surface:  #15181f;
+  --surface2: #1e2230;
+  --border:   #2a2f3f;
+  --text:     #d4d8e8;
+  --text-dim: #7a8099;
+  --red:      #ff3b4f;
+  --green:    #35d0a2;
+}
+:root {
+  --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 6px 20px rgba(0,0,0,0.22);
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --focus-ring: 0 0 0 3px rgba(0,76,252,0.28);
+}
+body.light {
+  --bg:       #eef0f5;
+  --surface:  #ffffff;
+  --surface2: #e2e5ee;
+  --border:   #c8cdde;
+  --text:     #1a1d2e;
+  --text-dim: #5a6080;
+  --shadow: 0 1px 2px rgba(20,25,60,0.06), 0 6px 20px rgba(20,25,60,0.08);
+  --shadow-sm: 0 1px 3px rgba(20,25,60,0.08);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+::selection { background: rgba(0,76,252,0.35); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface2); border-radius: 5px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: var(--border); }
 
-  body.light {
-    --bg: #eef0f5;
-    --surface: #ffffff;
-    --surface2: #e2e5ee;
-    --border: #c8cdde;
-    --text: #1a1d2e;
-    --text-dim: #5a6080;
-  }
+/* Header */
+header { padding: 18px 16px 14px 16px; }
+.header {
+  position: relative; /* needed for absolute-positioned logo */
+}
+.header-logo {
+  position: absolute;
+  top: 10px;
+  right: 16px;
+  height: 90px;
+  width: auto;
+  filter: invert(1);   /* dark mode: black artwork → white */
+  opacity: 0.85;
+  pointer-events: none;
+  user-select: none;
+}
+body.light .header-logo {
+  filter: none;        /* light mode: show original black artwork */
+  opacity: 0.9;
+}
+header h1 {
+  color: var(--accent-2);
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 4px 0;
+}
+.subtitle { font-size: 12px; color: var(--text-dim); margin: 0 0 14px 0; letter-spacing: 0.01em; }
+.header-btns { display: flex; gap: 7px; flex-wrap: wrap; align-items: center; }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border-radius: 6px;
+  padding: 0 14px;
+  height: 32px;
+  cursor: pointer;
+  transition: filter 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.06s, opacity 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.btn:hover:not(:disabled) { filter: brightness(1.12); border-color: var(--text-dim); }
+.btn:active:not(:disabled) { transform: translateY(1px); filter: brightness(0.96); }
+.btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
+.btn svg { width: 15px; height: 15px; }
+.btn-primary {
+  background: linear-gradient(180deg, #1f8f57, #17703f);
+  border-color: #1a7a4a;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), var(--shadow-sm);
+}
+.btn-orange {
+  background: linear-gradient(180deg, #ffab2e, #f79300);
+  border-color: #e68d00;
+  color: #000;
+  letter-spacing: 0.03em;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.3), var(--shadow-sm);
+}
+.btn-stop.sweeping { border-color: var(--red); color: var(--red); box-shadow: 0 0 0 3px rgba(255,59,79,0.15); }
+.btn-sm { padding: 0 10px; height: 24px; font-size: 11px; border-radius: 5px; background: var(--surface); box-shadow: none; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    font-size: 13px;
-    line-height: 1.5;
-    min-height: 100vh;
-  }
+/* Layout */
+.main-grid {
+  display: grid;
+  grid-template-columns: 280px 330px 1fr;
+  grid-template-areas:
+    "graph graph graph"
+    "col1 col2 slots";
+  padding: 12px;
+  gap: 10px;
+  align-items: start;
+}
+.col-left     { grid-area: col1; display: flex; flex-direction: column; gap: 10px; }
+.col-settings { grid-area: col2; display: flex; flex-direction: column; gap: 10px; }
+.col-graph    { grid-area: graph; }
+.col-slots    { grid-area: slots; }
 
-  a { color: var(--accent-2); text-decoration: none; }
-  a:hover { text-decoration: underline; }
-
-  /* Header */
-  .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 16px;
-    position: relative;
-  }
-
-  .header-logo {
-    position: absolute;
-    top: 10px;
-    right: 16px;
-    height: 90px;
-    width: auto;
-    /* dark bg: invert black→white, keep contrast */
-    filter: invert(1);
-    opacity: 0.85;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  body.light .header-logo {
-    filter: none;
-    opacity: 0.9;
-  }
-
-  .header h1 {
-    color: var(--accent-2);
-    font-size: 36px;
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-
-  .header .subtitle {
-    color: var(--text-dim);
-    font-size: 12px;
-    margin-bottom: 10px;
-  }
-
-  .header-buttons {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    align-items: center;
-  }
-
-  /* Buttons */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
-    border: none;
-    border-radius: 5px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.15s, background 0.15s;
-    white-space: nowrap;
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn:hover:not(:disabled) { opacity: 0.85; }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-primary {
-    background: #1a7a4a;
-    color: #fff;
-    border-color: #1a7a4a;
-  }
-
-  .btn-orange {
-    background: var(--accent-2);
-    color: #000;
-    border-color: var(--accent-2);
-  }
-
-  .btn-stop {
-    padding: 6px 8px;
-    background: var(--surface2);
-    border-color: var(--border);
-  }
-
-  .btn-stop.sweeping {
-    color: var(--red);
-    border-color: var(--red);
-  }
-
-  .btn svg { flex-shrink: 0; }
-
-  /* Main layout — settings columns always fixed width, graph always full width below */
+@media (max-width: 939px) {
   .main-grid {
-    display: grid;
-    grid-template-columns: 280px 330px 1fr;
+    grid-template-columns: 280px 1fr;
     grid-template-areas:
-      "graph graph graph"
-      "col1 col2 slots";
-    padding: 12px;
-    gap: 10px;
-    align-items: start;
+      "graph graph"
+      "col1 col2"
+      "slots slots";
   }
-
-  .col-left     { grid-area: col1; display: flex; flex-direction: column; gap: 10px; }
-  .col-settings { grid-area: col2; display: flex; flex-direction: column; gap: 10px; }
-  .col-graph    { grid-area: graph; }
-  .col-slots    { grid-area: slots; }
-
-  /* Slots move below graph when only two settings columns fit (≈ iPad portrait) */
-  @media (max-width: 939px) {
-    .main-grid {
-      grid-template-columns: 280px 1fr;
-      grid-template-areas:
-        "graph graph"
-        "col1 col2"
-        "slots slots";
-    }
+}
+@media (max-width: 639px) {
+  .main-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "graph"
+      "col1"
+      "col2"
+      "slots";
   }
-
-  /* Single column on phone */
-  @media (max-width: 639px) {
-    .main-grid {
-      grid-template-columns: 1fr;
-      grid-template-areas:
-        "graph"
-        "col1"
-        "col2"
-        "slots";
-    }
-  }
-
-  /* Panels */
-  .panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 12px;
-  }
-
-  .panel-title {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: var(--text-dim);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  /* Form controls */
-  .form-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-    gap: 8px;
-  }
-
-  .form-row label {
-    font-size: 12px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-  }
-
-  .form-row input[type="number"],
-  .form-row select {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text);
-    font-size: 12px;
-    padding: 4px 7px;
-    width: 100px;
-  }
-
-  .form-row select { width: 100%; }
-
-  .form-row input[type="range"] {
-    flex: 1;
-    accent-color: var(--accent);
-    min-width: 80px;
-  }
-
-  .form-row .range-val {
-    font-size: 12px;
-    color: var(--text);
-    min-width: 50px;
-    text-align: right;
-  }
-
-  .form-row input[type="checkbox"] {
-    accent-color: var(--accent);
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-  }
-
-  .form-row.full select { width: 100%; flex: 1; }
-
-  /* Aligned slider grid: label | slider | value */
-  .slider-grid {
-    display: grid;
-    grid-template-columns: minmax(120px, auto) 1fr auto;
-    align-items: center;
-    gap: 6px 8px;
-    margin-top: 6px;
-  }
-
-  .slider-grid label {
-    font-size: 12px;
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
-
-  .slider-grid input[type="range"] {
-    width: 100%;
-    accent-color: var(--accent);
-  }
-
-  .slider-grid .range-val {
-    font-size: 12px;
-    color: var(--text);
-    text-align: right;
-    white-space: nowrap;
-    min-width: 54px;
-  }
-
-  .slider-grid input[type="checkbox"] {
-    accent-color: var(--accent);
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-  }
-
-  /* Meters bar — full-width strip between header and grid */
-  .meters-bar {
-    display: flex;
-    align-items: stretch;
-    gap: 8px;
-    padding: 8px 12px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-  }
-
-  .meters-bar .meter-block,
-  .meters-bar .status-block,
-  .meters-bar .status-bar,
-  .meters-bar .peak-block {
-    flex: 1;
-    margin-bottom: 0;
-  }
-
-  .meters-bar .status-bar {
-    display: flex;
-    align-items: center;
-    min-width: 120px;
-  }
-
-  .meters-bar .peak-block {
-    min-width: 120px;
-  }
-
-  .meters-bar .meter-label,
-  .meters-bar .status-label,
-  .meters-bar .peak-label {
-    font-size: 12px;
-    letter-spacing: 0.08em;
-  }
-
-  .meters-bar .meter-value,
-  .meters-bar .status-value {
-    font-size: 22px;
-    line-height: 1.1;
-  }
-
-  .meters-bar .peak-value {
-    font-size: 22px;
-    line-height: 1.1;
-  }
-
-  .meters-bar #peakResponse {
-    font-size: 18px !important;
-  }
-
-  .meters-bar .status-bar {
-    font-size: 15px;
-  }
-
-  /* Meters */
-  .meter-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-bottom: 10px;
-  }
-
-  .meter-block {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 7px 9px;
-  }
-
-  .meter-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 3px;
-  }
-
-  .meter-value {
-    font-size: 15px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--text);
-  }
-
-  .meter-bar-bg {
-    height: 4px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 5px;
-    overflow: hidden;
-  }
-
-  .meter-bar {
-    height: 100%;
-    background: var(--green);
-    border-radius: 2px;
-    transition: width 0.08s;
-    width: 0%;
-  }
-
-  .meter-bar.clipping { background: var(--red); }
-
-  /* Status row */
-  .status-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-
-  .status-block {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 6px 8px;
-  }
-
-  .status-label {
-    font-size: 10px;
-    color: var(--text-dim);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-  }
-
-  .status-value {
-    font-size: 13px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: var(--text);
-    margin-top: 1px;
-  }
-
-  .status-value.orange { color: var(--accent-2); }
-  .status-value.red { color: var(--red); }
-
-  /* Status bar */
-  .status-bar {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 5px 9px;
-    font-size: 12px;
-    color: var(--text-dim);
-    margin-bottom: 8px;
-  }
-
-  .status-bar span.orange { color: var(--accent-2); font-weight: 600; }
-  .status-bar span.red { color: var(--red); font-weight: 600; }
-  .status-bar span.green { color: var(--green); font-weight: 600; }
-
-  /* Peak response */
-  .peak-block {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 7px 9px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-  }
-
-  .peak-label { font-size: 11px; color: var(--text-dim); }
-
-  .peak-value {
-    font-size: 17px;
-    font-weight: 800;
-    color: var(--accent-2);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* Graph */
-  .col-graph .panel {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .chart-wrap {
-    position: relative;
-    height: 364px;
-  }
-
-  @media (max-width: 639px) {
-    .chart-wrap { height: 265px; }
-  }
-
-  .chart-wrap canvas { width: 100% !important; height: 100% !important; }
-
-  .chart-resize-handle {
-    height: 7px;
-    cursor: ns-resize;
-    background: transparent;
-    border-top: 2px solid var(--border);
-    border-radius: 0 0 7px 7px;
-    margin-top: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: border-color 0.15s;
-  }
-
-  .chart-resize-handle:hover,
-  .chart-resize-handle.dragging {
-    border-color: var(--accent);
-  }
-
-  .chart-resize-handle::after {
-    content: '';
-    width: 36px;
-    height: 3px;
-    border-radius: 2px;
-    background: var(--border);
-    transition: background 0.15s;
-  }
-
-  .chart-resize-handle:hover::after,
-  .chart-resize-handle.dragging::after {
-    background: var(--accent);
-  }
-
-  /* Slots */
-  #slotList {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-  }
-
-  .slot {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 8px 10px;
-    margin-bottom: 0;
-  }
-
-  .slot-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 4px;
-  }
-
-  .slot-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
-  .slot-name {
-    flex: 1;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    color: var(--text);
-    font-size: 12px;
-    font-weight: 600;
-    padding: 1px 3px;
-    outline: none;
-  }
-
-  .slot-name:focus { border-bottom-color: var(--accent); }
-
-  .slot-actions {
-    display: flex;
-    gap: 4px;
-    margin-top: 5px;
-    flex-wrap: wrap;
-  }
-
-  .slot-btn {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    cursor: pointer;
-  }
-
-  .slot-btn:hover { opacity: 0.8; }
-
-  .slot-meta {
-    font-size: 10px;
-    color: var(--text-dim);
-    margin-top: 3px;
-    min-height: 14px;
-  }
-
-  /* Help overlay */
-  .overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .overlay.open { display: flex; }
-
-  .help-modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 24px;
-    max-width: 520px;
-    width: 90%;
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-
-  .help-modal h2 {
-    font-size: 16px;
-    color: var(--accent-2);
-    margin-bottom: 14px;
-  }
-
-  .help-modal ol {
-    padding-left: 18px;
-    margin-bottom: 16px;
-  }
-
-  .help-modal ol li {
-    margin-bottom: 6px;
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .help-footer {
-    border-top: 1px solid var(--border);
-    padding-top: 12px;
-    font-size: 12px;
-    color: var(--text-dim);
-    line-height: 1.7;
-  }
-
-  .help-close {
-    margin-top: 16px;
-    display: block;
-    width: 100%;
-  }
-
-  /* Misc */
-  .sep { height: 1px; background: var(--border); margin: 8px 0; }
-
-  .note {
-    font-size: 11px;
-    color: var(--text-dim);
-    font-style: italic;
-    padding: 4px 0;
-  }
-
-  input[type="number"]::-webkit-inner-spin-button { opacity: 0.5; }
+}
+
+.chart-wrap {
+  position: relative;
+  height: 364px;   /* 520 * 0.70, rounded */
+}
+@media (max-width: 639px) {
+  .chart-wrap { height: 265px; }
+}
+.chart-wrap canvas { width: 100% !important; height: 100% !important; }
+
+.chart-resize-handle {
+  height: 7px;
+  cursor: ns-resize;
+  background: transparent;
+  border-top: 2px solid var(--border);
+  border-radius: 0 0 7px 7px;
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s;
+}
+.chart-resize-handle:hover,
+.chart-resize-handle.dragging {
+  border-color: var(--accent);
+}
+.chart-resize-handle::after {
+  content: '';
+  width: 36px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--border);
+  transition: background 0.15s;
+}
+.chart-resize-handle:hover::after,
+.chart-resize-handle.dragging::after {
+  background: var(--accent);
+}
+
+/* Chart empty state */
+.chart-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--text-dim);
+  pointer-events: none;
+  text-align: center;
+  padding: 0 20px;
+}
+.chart-empty svg { width: 44px; height: 44px; opacity: 0.45; }
+.chart-empty-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.chart-empty-hint { font-size: 12px; max-width: 420px; line-height: 1.5; }
+
+/* Sweep progress bar (meters strip) */
+#sweepProgressBar {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), #4ea1ff);
+  opacity: 0;
+  transition: width 0.15s linear, opacity 0.4s;
+  pointer-events: none;
+}
+
+/* Toasts */
+#toasts {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 200;
+}
+.toast {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: var(--shadow);
+  max-width: 320px;
+  animation: toast-in 0.2s ease;
+  transition: opacity 0.3s, transform 0.3s;
+}
+.toast.green  { border-left-color: var(--green); }
+.toast.orange { border-left-color: var(--accent-2); }
+.toast.red    { border-left-color: var(--red); }
+.toast.out { opacity: 0; transform: translateX(12px); }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Keyboard shortcut chips */
+kbd {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  color: var(--text);
+}
+
+/* Panels */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: var(--shadow);
+}
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+}
+.panel-title::before {
+  content: '';
+  width: 3px;
+  height: 11px;
+  border-radius: 2px;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+
+/* Form controls */
+.form-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.form-row label { font-size: 12px; color: var(--text-dim); flex-shrink: 0; }
+input[type="number"] {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 8px;
+  width: 100px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 12px;
+  padding: 5px 8px;
+  width: 100%;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+input[type="number"]:hover, select:hover { border-color: var(--text-dim); }
+input[type="number"]:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-ring);
+}
+.field-label { font-size: 12px; color: var(--text-dim); display: block; margin-bottom: 4px; }
+.sep { border-top: 1px solid var(--border); margin: 10px 0; }
+
+.slider-grid {
+  display: grid;
+  grid-template-columns: minmax(120px, auto) 1fr auto;
+  align-items: center;
+  gap: 6px 8px;
+  margin-top: 6px;
+}
+.slider-grid label { font-size: 12px; color: var(--text-dim); }
+.slider-grid input[type="range"] { width: 100%; margin: 0; }
+.slider-grid input[type="checkbox"] { justify-self: start; margin-top: 3px; accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+/* Custom range sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--surface2);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+  transition: transform 0.1s;
+}
+input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.2); }
+input[type="range"]::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid var(--accent);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+}
+input[type="range"]:focus-visible { box-shadow: var(--focus-ring); }
+.range-val {
+  font-size: 12px;
+  color: var(--text);
+  text-align: right;
+  white-space: nowrap;
+  min-width: 54px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Meters */
+.meter-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.meter-block { flex: 1; }
+.meter-label { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
+.meter-value { font-size: 15px; font-variant-numeric: tabular-nums; margin-bottom: 4px; }
+.meter-bar-bg { height: 5px; background: var(--surface2); border-radius: 3px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.25); }
+.meter-bar { height: 100%; width: 0%; background: linear-gradient(90deg, #27a37e, var(--green)); border-radius: 3px; transition: width 0.09s linear; }
+.meter-bar.hot { background: linear-gradient(90deg, #ff6b3d, var(--red)); }
+
+.status-row { display: flex; gap: 10px; margin-bottom: 10px; }
+.status-block { flex: 1; }
+.status-label { font-size: 11px; color: var(--text-dim); margin-bottom: 2px; }
+.status-value { font-size: 14px; font-variant-numeric: tabular-nums; }
+.status-value.red { color: var(--red); }
+
+.status-bar {
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.status-bar .orange { color: var(--accent-2); }
+.status-bar .red { color: var(--red); }
+.status-bar .green { color: var(--green); }
+
+.peak-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+.peak-label { font-size: 12px; color: var(--text-dim); }
+.peak-right { text-align: right; }
+.peak-value { font-size: 17px; font-weight: 800; color: var(--accent-2); }
+
+/* Meters bar — full-width strip between header and grid */
+.meters-bar {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 10px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+.meters-bar .meter-block,
+.meters-bar .status-block,
+.meters-bar .status-bar,
+.meters-bar .peak-block {
+  flex: 1;
+  margin-bottom: 0;
+  padding: 2px 16px;
+}
+.meters-bar > div:first-child { padding-left: 0; }
+.meters-bar > div + div { border-left: 1px solid var(--border); }
+.meters-bar .status-bar {
+  display: flex;
+  align-items: center;
+  min-width: 120px;
+  font-size: 15px;
+  border-top: none;
+  padding-top: 0;
+  margin-bottom: 0;
+}
+.meters-bar .peak-block {
+  min-width: 120px;
+  border-top: none;
+  padding-top: 0;
+}
+/* Large fonts for meters bar */
+.meters-bar .meter-label,
+.meters-bar .status-label,
+.meters-bar .peak-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+.meters-bar .meter-value,
+.meters-bar .status-value {
+  font-size: 22px;
+  line-height: 1.1;
+}
+.meters-bar .peak-value {
+  font-size: 22px;
+  line-height: 1.1;
+}
+.meters-bar #peakResponse {
+  font-size: 18px !important;
+}
+
+/* Slots */
+#slotList {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(3, auto);
+  grid-auto-flow: column;
+  gap: 7px;
+}
+.slot {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.slot:hover { border-color: var(--text-dim); box-shadow: var(--shadow-sm); }
+.slot.dragover { border-color: var(--accent); box-shadow: var(--focus-ring); }
+.btn-sm.confirm { background: var(--red); border-color: var(--red); color: #fff; }
+.slot-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.slot-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; border: 1px solid rgba(127,127,127,0.4); }
+.slot-name {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.slot-name:focus { border-bottom-color: var(--accent); }
+.slot input[type="checkbox"] { width: 15px; height: 15px; cursor: pointer; }
+.slot-actions { display: flex; gap: 5px; margin-bottom: 5px; flex-wrap: wrap; }
+.slot-actions .btn-sm { display: inline-flex; align-items: center; }
+.slot-meta { font-size: 11px; color: var(--text-dim); }
+.hidden { display: none !important; }
+.note { font-size: 11px; color: var(--accent-2); margin-top: 6px; }
+
+/* Help overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+.overlay-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 560px;
+  width: calc(100% - 32px);
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.45);
+  animation: overlay-pop 0.18s ease;
+}
+@keyframes overlay-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+.overlay-box h2 { margin: 0 0 12px 0; font-size: 18px; color: var(--accent-2); }
+.overlay-box ol { font-size: 13px; line-height: 1.7; padding-left: 20px; margin: 0 0 14px 0; }
+.overlay-box a { color: var(--accent-2); }
+.overlay-footer { font-size: 12px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 10px; line-height: 1.7; }
 </style>
 </head>
 <body>
 
-<!-- Header -->
-<div class="header">
+<header class="header">
   <img class="header-logo" src="logo.png" alt="Logo">
   <h1>Nick's Guitar Pickup Bode Plotter</h1>
   <p class="subtitle">Sweep a compensated sine signal through a pickup test rig, measure the soundcard input, and plot the normalized frequency response.</p>
-  <div class="header-buttons">
-    <button class="btn btn-primary" id="btnEnable">
-      <i data-lucide="power" width="14" height="14"></i> Enable Audio
-    </button>
-    <button class="btn" id="btnTest" disabled>
-      <i data-lucide="audio-lines" width="14" height="14"></i> Test Signal
-    </button>
-    <button class="btn btn-orange" id="btnSweep" disabled>
-      <i data-lucide="chart-spline" width="14" height="14"></i> START SWEEP
-    </button>
-    <button class="btn btn-stop" id="btnStop" disabled>
-      <i data-lucide="square" width="14" height="14"></i>
-    </button>
-    <button class="btn" id="btnExport">
-      <i data-lucide="download" width="14" height="14"></i> Export PNG
-    </button>
-    <button class="btn" id="btnClear">
-      <i data-lucide="eraser" width="14" height="14"></i> Clear Latest
-    </button>
-    <button class="btn" id="btnHelp">
-      <i data-lucide="circle-help" width="14" height="14"></i> Help
-    </button>
-    <button class="btn" id="btnTheme" title="Toggle light/dark mode" style="margin-left:auto;">
-      <i data-lucide="sun" width="14" height="14"></i>
-    </button>
+  <div class="header-btns">
+    <button class="btn btn-primary" id="enableAudioBtn"><i data-lucide="power"></i>Enable Audio</button>
+    <button class="btn" id="testBtn" disabled><i data-lucide="audio-lines"></i>Test Signal</button>
+    <button class="btn btn-orange" id="sweepBtn" disabled><i data-lucide="chart-spline"></i>START SWEEP</button>
+    <button class="btn btn-stop" id="stopBtn" disabled title="Stop"><i data-lucide="square"></i></button>
+    <button class="btn" id="exportBtn"><i data-lucide="download"></i>Export PNG</button>
+    <button class="btn" id="exportCsvBtn"><i data-lucide="file-spreadsheet"></i>Export CSV</button>
+    <button class="btn" id="clearBtn"><i data-lucide="eraser"></i>Clear Latest</button>
+    <button class="btn" id="helpBtn"><i data-lucide="circle-help"></i>Help</button>
+    <button class="btn" id="themeBtn" style="margin-left:auto" title="Toggle light/dark mode"><i data-lucide="sun"></i></button>
   </div>
-</div>
+</header>
 
-<!-- Meters bar -->
+<!-- Meters bar (full-width, single row) -->
 <div class="meters-bar">
   <div class="meter-block">
     <div class="meter-label">Input</div>
@@ -699,129 +609,114 @@
       <div style="font-size:13px;font-weight:600;color:var(--accent-2);font-variant-numeric:tabular-nums;" id="peakResponse">--</div>
     </div>
   </div>
+  <div id="sweepProgressBar"></div>
 </div>
 
-<!-- Main grid -->
 <div class="main-grid">
 
-  <!-- Column 1: Audio Routing -->
-  <div class="col-left" style="display:flex;flex-direction:column;gap:10px;">
-
-    <!-- Audio Routing panel -->
+  <!-- Column 1: Audio Routing only -->
+  <div class="col-left">
     <div class="panel">
-      <div class="panel-title">Audio routing</div>
-
-      <div class="form-row full">
-        <label>Input device</label>
-      </div>
-      <div class="form-row" style="flex-direction:column;align-items:stretch;gap:4px;">
-        <select id="inputDevice" style="width:100%"></select>
-      </div>
-
-      <div class="form-row" style="margin-top:6px;">
-        <label>Input channel</label>
-        <select id="inputChannel">
-          <option value="0">Channel 1 / left</option>
-          <option value="1">Channel 2 / right</option>
-          <option value="mix">Mono mix</option>
-        </select>
-      </div>
-
+      <div class="panel-title">Audio Routing</div>
+      <label class="field-label" for="inputDevice">Input device</label>
+      <select id="inputDevice"></select>
+      <label class="field-label" for="inputChannel">Input channel</label>
+      <select id="inputChannel">
+        <option value="0">Channel 1 / left</option>
+        <option value="1">Channel 2 / right</option>
+        <option value="mix">Mono mix</option>
+      </select>
       <div class="sep"></div>
-
-      <div class="form-row full">
-        <label>Output device</label>
-      </div>
-      <div class="form-row" style="flex-direction:column;align-items:stretch;gap:4px;">
-        <select id="outputDevice" style="width:100%"></select>
-      </div>
-
-      <div class="form-row" style="margin-top:6px;">
-        <label>Output channel</label>
-        <select id="outputChannel">
-          <option value="both">Both channels</option>
-          <option value="0">Channel 1 / left</option>
-          <option value="1">Channel 2 / right</option>
-        </select>
-      </div>
-
-      <div class="note" id="sinkIdNote" style="display:none;">Output routing via setSinkId not supported; using system default.</div>
+      <label class="field-label" for="outputDevice">Output device</label>
+      <select id="outputDevice"></select>
+      <label class="field-label" for="outputChannel">Output channel</label>
+      <select id="outputChannel">
+        <option value="both">Both channels</option>
+        <option value="0">Channel 1 / left</option>
+        <option value="1">Channel 2 / right</option>
+      </select>
+      <div class="note hidden" id="sinkIdNote">Output device selection (setSinkId) is not supported by this browser — the system default output is used.</div>
     </div>
-
   </div>
 
-  <!-- Column 2: Sweep settings + Graph settings -->
-  <div class="col-settings" style="display:flex;flex-direction:column;gap:10px;">
-
+  <!-- Column 2: Sweep Settings + Graph Settings -->
+  <div class="col-settings">
     <div class="panel">
-      <div class="panel-title">Sweep settings</div>
-
-      <!-- Number inputs: Start / End frequency -->
+      <div class="panel-title">Sweep Settings</div>
       <div class="form-row">
-        <label>Start frequency</label>
+        <label for="startFreq">Start frequency</label>
         <input type="number" id="startFreq" value="500" min="20" max="20000" step="1">
-        <span style="font-size:12px;color:var(--text-dim)">Hz</span>
       </div>
       <div class="form-row">
-        <label>End frequency</label>
+        <label for="endFreq">End frequency</label>
         <input type="number" id="endFreq" value="7000" min="20" max="20000" step="1">
-        <span style="font-size:12px;color:var(--text-dim)">Hz</span>
       </div>
-
-      <!-- Slider rows — all use the same 3-column grid for alignment -->
       <div class="slider-grid">
-        <label>Scan Durtation</label>
-        <input type="range" id="scanDuration" min="1" max="60" step="1" value="10">
+        <label for="scanDuration">Scan Durtation</label>
+        <input type="range" id="scanDuration" value="10" min="1" max="60" step="1">
         <span class="range-val" id="scanDurationVal">10 s</span>
 
-        <label>Readings/point</label>
-        <input type="range" id="readingsPerPoint" min="1" max="50" step="1" value="15">
+        <label for="readingsPerPoint">Readings/point</label>
+        <input type="range" id="readingsPerPoint" value="15" min="1" max="50" step="1">
         <span class="range-val" id="readingsPerPointVal">15</span>
 
-   
+        <label for="inputSensitivity" class="hidden">Input sensitivity</label>
+        <input type="range" id="inputSensitivity" value="0" min="-24" max="24" step="0.5" class="hidden">
+        <span class="range-val hidden" id="inputSensitivityVal">0 dB</span>
 
+        <label for="outputAttenuation" class="hidden">Output attenuation</label>
+        <input type="range" id="outputAttenuation" value="6" min="0" max="6" step="0.1" class="hidden">
+        <span class="range-val hidden" id="outputAttenuationVal">6 dB/oct</span>
+
+        <label for="sineOnly" class="hidden">Sine-only filter</label>
+        <input type="checkbox" id="sineOnly" class="hidden">
+        <span class="hidden"></span>
       </div>
     </div>
 
     <div class="panel">
-      <div class="panel-title">Graph settings</div>
+      <div class="panel-title">Graph Settings</div>
       <div class="slider-grid">
-        <label>Graph smoothness</label>
-        <input type="range" id="graphSmoothness" min="1" max="10" step="1" value="5">
-        <span class="range-val" id="smoothnessVal">5</span>
+        <label for="graphSmoothness">Graph smoothness</label>
+        <input type="range" id="graphSmoothness" value="5" min="1" max="10" step="1">
+        <span class="range-val" id="graphSmoothnessVal">5</span>
 
-        <label>Graph offset</label>
-        <input type="range" id="graphOffset" min="-6" max="6" step="0.1" value="0">
-        <span class="range-val" id="graphOffsetVal">0 dB/oct</span>
+        <label for="graphOffset">Graph tilt</label>
+        <input type="range" id="graphOffset" value="0" min="-6" max="6" step="0.1">
+        <span class="range-val" id="graphOffsetVal">+0.0 dB/oct</span>
       </div>
     </div>
-
   </div>
 
-  <!-- Column 3: Graph -->
+  <!-- Measurement Slots -->
+  <div class="col-slots">
+    <div class="panel">
+      <div class="panel-title">Measurement Slots</div>
+      <div id="slotList"></div>
+    </div>
+  </div>
+
+  <!-- Graph -->
   <div class="col-graph">
     <div class="panel">
       <div class="panel-title">Bode Plot</div>
       <div class="chart-wrap" id="chartWrap">
         <canvas id="bodeChart"></canvas>
+        <div class="chart-empty" id="chartEmpty">
+          <i data-lucide="chart-spline"></i>
+          <div class="chart-empty-title">No measurements yet</div>
+          <div class="chart-empty-hint">Enable Audio, then press START SWEEP — or drop a saved .bode file anywhere on the page to load it into a slot.</div>
+        </div>
       </div>
       <div class="chart-resize-handle" id="chartResizeHandle"></div>
-    </div>
-  </div>
-
-  <!-- Column 4: Measurement slots -->
-  <div class="col-slots">
-    <div class="panel">
-      <div class="panel-title">Measurement slots</div>
-      <div id="slotList"></div>
     </div>
   </div>
 
 </div>
 
 <!-- Help overlay -->
-<div class="overlay" id="helpOverlay">
-  <div class="help-modal">
+<div class="overlay hidden" id="helpOverlay">
+  <div class="overlay-box">
     <h2>How to use</h2>
     <ol>
       <li>Place your pickup in the device.</li>
@@ -832,17 +727,29 @@
       <li>Start the Sweep.</li>
       <li>Adjust Smoothness and Measurement offset to taste.</li>
     </ol>
-    <div class="help-footer">
-      <div>Build your own coil driver: <a href="https://www.youtube.com/watch?v=SCeFtqdcS1Y" target="_blank">https://www.youtube.com/watch?v=SCeFtqdcS1Y</a></div>
-      <div style="margin-top:6px;">This tool is for playing around and gives rough approximations. If you are serious about plotting your pickups, get the Bode Plotter at <a href="https://www.axetech.com" target="_blank">https://www.axetech.com</a></div>
-      <div style="margin-top:8px;">©2026 Built with ❤️ by Niklaus Hirt</div>
+    <div style="font-size:12px;color:var(--text-dim);margin-bottom:14px;line-height:2;">
+      <b style="color:var(--text)">Keyboard shortcuts:</b><br>
+      <kbd>Space</kbd> start / stop sweep &nbsp;·&nbsp; <kbd>T</kbd> test tone &nbsp;·&nbsp;
+      <kbd>1</kbd>–<kbd>6</kbd> toggle slots &nbsp;·&nbsp; <kbd>D</kbd> light / dark &nbsp;·&nbsp;
+      <kbd>H</kbd> help &nbsp;·&nbsp; <kbd>Esc</kbd> close
     </div>
-    <button class="btn help-close" id="helpClose">Close</button>
+    <div class="overlay-footer">
+      <div>Build your own coil driver <a href="https://www.youtube.com/watch?v=SCeFtqdcS1Y" target="_blank" rel="noopener">https://www.youtube.com/watch?v=SCeFtqdcS1Y</a></div>
+      <div>This tool is for playing around and gives rough approximations. If you are serious about plotting your pickups, get the Bode Plotter at <a href="https://www.axetech.com" target="_blank" rel="noopener">https://www.axetech.com</a></div>
+      <div>©2026 Built with ❤️ by Niklaus Hirt</div>
+    </div>
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn" id="helpCloseBtn">Close</button>
+    </div>
   </div>
 </div>
 
+<div id="toasts"></div>
+
 <script>
-// ─── Constants ────────────────────────────────────────────────────────────────
+'use strict';
+
+/* ---------- Constants ---------- */
 const DEFAULT_START_FREQ = 500;
 const DEFAULT_END_FREQ   = 7000;
 const PRESCAN_HZ         = 300;
@@ -850,481 +757,453 @@ const POINT_COUNT        = 128;
 const FFT_SIZE           = 8192;
 const MIN_DB             = -96;
 
-const SLOT_COLORS = [
-  '#35d0a2', '#4ea1ff', '#ff9b45', '#ffffff', '#b76cff', '#00d8ff'
-];
+const SLOT_COLORS = ['#35d0a2', '#4ea1ff', '#ff9b45', '#ffffff', '#b76cff', '#00d8ff'];
 
-// ─── State ────────────────────────────────────────────────────────────────────
-let audioCtx       = null;
-let inputStream    = null;
-let sourceNode     = null;
-let splitterNode   = null;
-let inputGainNode  = null;
-let analyserNode   = null;
-
-let outputDest     = null;
-let outputAudio    = null;
-let oscNode        = null;
-let outGainNode    = null;
-let outMerger      = null;
-let outAnalyser    = null;
-
-let audioEnabled   = false;
-let isSweeping     = false;
-let isTestTone     = false;
-let sweepAbort     = false;
-
-let noiseFloorCache = {};
-let activeNoiseFloor = 0;
-
-let chartData      = [];       // [{x, rawDb}] current measurement
-let chartPointCloud = [];      // all raw readings
-let slots          = Array.from({length: 6}, (_, i) => ({
-  name: `Slot ${i + 1}`,
-  data: null,
-  start: DEFAULT_START_FREQ,
-  end: DEFAULT_END_FREQ,
-  visible: false
-}));
-
-let activePeakSource = null;   // 'current' | 0..5
-
-let meterAnimId    = null;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+/* ---------- Utilities ---------- */
 const dbToGain = db => Math.pow(10, db / 20);
 const gainToDb = g  => 20 * Math.log10(Math.max(1e-10, g));
-const rms = buf => {
-  let s = 0;
-  for (let i = 0; i < buf.length; i++) s += buf[i] * buf[i];
-  return Math.sqrt(s / buf.length);
-};
-const fmtHz = hz => hz >= 1000 ? `${(hz/1000).toFixed(2)} kHz` : `${Math.round(hz)} Hz`;
+const rms = buf => Math.sqrt(buf.reduce((s, v) => s + v * v, 0) / buf.length);
+const fmtHz = hz => hz >= 1000 ? `${(hz / 1000).toFixed(2)} kHz` : `${Math.round(hz)} Hz`;
 const fmtDb = db => `${db >= 0 ? '+' : ''}${db.toFixed(1)} dB`;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function logspace(start, end, n) {
+  const out = [];
+  const ratio = end / start;
+  for (let i = 0; i < n; i++) out.push(start * Math.pow(ratio, i / (n - 1)));
+  return out;
+}
 
-// ─── Status ───────────────────────────────────────────────────────────────────
+/* ---------- DOM ---------- */
+const $ = id => document.getElementById(id);
+const enableAudioBtn = $('enableAudioBtn'), testBtn = $('testBtn'), sweepBtn = $('sweepBtn'),
+      stopBtn = $('stopBtn'), exportBtn = $('exportBtn'), clearBtn = $('clearBtn'),
+      helpBtn = $('helpBtn'), themeBtn = $('themeBtn'),
+      inputDbEl = $('meterInVal'), outputDbEl = $('meterOutVal'),
+      inputBarEl = $('meterInBar'), outputBarEl = $('meterOutBar'),
+      currentFreqEl = $('currentFreq'), progressEl = $('progress'),
+      statusBarEl = $('statusBar'), peakFreqEl = $('peakFreq'), peakDbEl = $('peakResponse'),
+      inputDeviceEl = $('inputDevice'), inputChannelEl = $('inputChannel'),
+      outputDeviceEl = $('outputDevice'), outputChannelEl = $('outputChannel'),
+      sinkIdNoteEl = $('sinkIdNote'),
+      startFreqEl = $('startFreq'), endFreqEl = $('endFreq'),
+      scanDurationEl = $('scanDuration'), readingsPerPointEl = $('readingsPerPoint'),
+      inputSensitivityEl = $('inputSensitivity'), outputAttenuationEl = $('outputAttenuation'),
+      sineOnlyEl = $('sineOnly'),
+      graphSmoothnessEl = $('graphSmoothness'), graphOffsetEl = $('graphOffset'),
+      helpOverlay = $('helpOverlay'), helpCloseBtn = $('helpCloseBtn'),
+      slotListEl = $('slotList');
+
+/* ---------- State ---------- */
+let audioCtx = null;
+let inputStream = null, inputSource = null, inputSplitter = null, inputGainNode = null, analyserNode = null;
+let oscNode = null, outGainNode = null, outMerger = null, outAnalyser = null, outDest = null, outputAudio = null;
+let meterTimer = null;
+let noiseRms = 0;
+const noiseFloorCache = {};
+let isTestTone = false, isSweeping = false, sweepAbort = false;
+let chartData = [], chartPointCloud = [];
+let activePeakSource = null;   // 'current' | 0..5 | null
+let bodeChart = null;
+
+const slots = Array.from({ length: 6 }, (_, i) => ({
+  name: `Slot ${i + 1}`, data: [], start: null, end: null, visible: false
+}));
+
+/* ---------- Status ---------- */
 function setStatus(text, cls) {
-  const el = document.getElementById('statusBar');
-  el.innerHTML = cls ? `<span class="${cls}">${text}</span>` : text;
+  statusBarEl.innerHTML = '';
+  const span = document.createElement('span');
+  if (cls) span.className = cls;
+  span.textContent = text;
+  statusBarEl.appendChild(span);
 }
 
-// ─── Lucide icons ─────────────────────────────────────────────────────────────
-function renderIcons() {
-  lucide.createIcons();
+function renderIcons() { lucide.createIcons(); }
+
+/* ---------- Toasts ---------- */
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  t.className = 'toast' + (type ? ` ${type}` : '');
+  t.textContent = msg;
+  $('toasts').appendChild(t);
+  setTimeout(() => {
+    t.classList.add('out');
+    setTimeout(() => t.remove(), 320);
+  }, 2800);
 }
 
-// ─── Audio Enable ─────────────────────────────────────────────────────────────
-async function enableAudio() {
+/* ---------- Theme-aware slot colors ---------- */
+// Slot 4 is white; swap it for a dark slate in light mode so it stays visible.
+function slotColor(i) {
+  const c = SLOT_COLORS[i];
+  if (c === '#ffffff' && document.body.classList.contains('light')) return '#4a5165';
+  return c;
+}
+
+function refreshSlotDots() {
+  document.querySelectorAll('.slot-dot').forEach((dot, i) => {
+    const c = slotColor(i);
+    dot.style.background = c;
+    dot.style.color = c;
+  });
+}
+
+/* ---------- Persistence (localStorage) ---------- */
+const LS_KEY = 'bodePlotter_v1';
+let saveTimer = null;
+let savedDevices = { input: null, output: null };
+
+function saveState() {
   try {
-    setStatus('Requesting audio permission…');
-    const tempStream = await navigator.mediaDevices.getUserMedia({
-      audio: {
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 2
-      }
+    localStorage.setItem(LS_KEY, JSON.stringify({
+      theme: document.body.classList.contains('light') ? 'light' : 'dark',
+      settings: {
+        startFreq: startFreqEl.value,
+        endFreq: endFreqEl.value,
+        scanDuration: scanDurationEl.value,
+        readingsPerPoint: readingsPerPointEl.value,
+        inputSensitivity: inputSensitivityEl.value,
+        outputAttenuation: outputAttenuationEl.value,
+        sineOnly: sineOnlyEl.checked,
+        graphSmoothness: graphSmoothnessEl.value,
+        graphOffset: graphOffsetEl.value,
+        inputChannel: inputChannelEl.value,
+        outputChannel: outputChannelEl.value
+      },
+      devices: { input: inputDeviceEl.value || savedDevices.input, output: outputDeviceEl.value || savedDevices.output },
+      chartHeight: $('chartWrap').style.height || null,
+      chartData,
+      activePeakSource,
+      slots: slots.map(s => ({ name: s.name, data: s.data, start: s.start, end: s.end, visible: s.visible }))
+    }));
+  } catch (e) { /* quota/private mode — persistence is best-effort */ }
+}
+
+function scheduleSave() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveState, 300);
+}
+
+const isRawPoint = p => p && typeof p.x === 'number' && typeof p.rawDb === 'number' && isFinite(p.x) && isFinite(p.rawDb);
+
+function loadState() {
+  let st = null;
+  try { st = JSON.parse(localStorage.getItem(LS_KEY)); } catch (e) {}
+  if (!st) return;
+
+  const s = st.settings || {};
+  const setV = (el, v) => { if (v != null) el.value = v; };
+  setV(startFreqEl, s.startFreq);
+  setV(endFreqEl, s.endFreq);
+  setV(scanDurationEl, s.scanDuration);
+  setV(readingsPerPointEl, s.readingsPerPoint);
+  setV(inputSensitivityEl, s.inputSensitivity);
+  setV(outputAttenuationEl, s.outputAttenuation);
+  sineOnlyEl.checked = !!s.sineOnly;
+  setV(graphSmoothnessEl, s.graphSmoothness);
+  setV(graphOffsetEl, s.graphOffset);
+  setV(inputChannelEl, s.inputChannel);
+  setV(outputChannelEl, s.outputChannel);
+
+  savedDevices = st.devices || savedDevices;
+
+  if (Array.isArray(st.chartData)) chartData = st.chartData.filter(isRawPoint);
+  if (st.activePeakSource === 'current' || typeof st.activePeakSource === 'number') {
+    activePeakSource = st.activePeakSource;
+  }
+
+  if (Array.isArray(st.slots)) {
+    st.slots.forEach((ss, i) => {
+      if (i >= slots.length || !ss) return;
+      slots[i].name = typeof ss.name === 'string' && ss.name ? ss.name : slots[i].name;
+      slots[i].data = Array.isArray(ss.data) ? ss.data.filter(isRawPoint) : [];
+      slots[i].start = typeof ss.start === 'number' ? ss.start : null;
+      slots[i].end = typeof ss.end === 'number' ? ss.end : null;
+      slots[i].visible = !!ss.visible && slots[i].data.length > 0;
     });
+  }
+
+  if (typeof st.chartHeight === 'string' && st.chartHeight) $('chartWrap').style.height = st.chartHeight;
+  if (st.theme === 'light') document.body.classList.add('light');
+}
+
+/* ---------- Audio: enable ---------- */
+async function enableAudio() {
+  enableAudioBtn.disabled = true;
+  try {
+    const constraints = {
+      echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2
+    };
+    const tempStream = await navigator.mediaDevices.getUserMedia({ audio: constraints });
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     await audioCtx.resume();
 
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const inputs  = devices.filter(d => d.kind === 'audioinput'  && d.deviceId !== 'default' && d.deviceId !== 'communications');
-    const outputs = devices.filter(d => d.kind === 'audiooutput' && d.deviceId !== 'default' && d.deviceId !== 'communications');
+    const devices = (await navigator.mediaDevices.enumerateDevices())
+      .filter(d => d.deviceId !== 'default' && d.deviceId !== 'communications');
+    const inputs = devices.filter(d => d.kind === 'audioinput');
+    const outputs = devices.filter(d => d.kind === 'audiooutput');
 
-    populateSelect('inputDevice',  inputs,  'audioinput');
-    populateSelect('outputDevice', outputs, 'audiooutput');
+    inputDeviceEl.innerHTML = '';
+    inputs.forEach((d, i) => {
+      const o = document.createElement('option');
+      o.value = d.deviceId;
+      o.textContent = d.label || `Input ${i + 1}`;
+      inputDeviceEl.appendChild(o);
+    });
+    outputDeviceEl.innerHTML = '';
+    outputs.forEach((d, i) => {
+      const o = document.createElement('option');
+      o.value = d.deviceId;
+      o.textContent = d.label || `Output ${i + 1}`;
+      outputDeviceEl.appendChild(o);
+    });
 
-    // Stop temp stream
     tempStream.getTracks().forEach(t => t.stop());
 
-    // Request selected input device
-    const inputDevId = document.getElementById('inputDevice').value;
-    const constraints = {
-      audio: {
-        deviceId: inputDevId ? { exact: inputDevId } : true,
-        echoCancellation: false,
-        noiseSuppression: false,
-        autoGainControl: false,
-        channelCount: 2
-      }
-    };
-    inputStream = await navigator.mediaDevices.getUserMedia(constraints);
+    // Restore last-used devices when they are still present
+    if (savedDevices.input && inputs.some(d => d.deviceId === savedDevices.input)) {
+      inputDeviceEl.value = savedDevices.input;
+    }
+    if (savedDevices.output && outputs.some(d => d.deviceId === savedDevices.output)) {
+      outputDeviceEl.value = savedDevices.output;
+    }
+
+    const selInputId = inputDeviceEl.value || (inputs.length ? inputs[0].deviceId : undefined);
+    inputStream = await navigator.mediaDevices.getUserMedia({
+      audio: Object.assign({}, constraints, selInputId ? { deviceId: { exact: selInputId } } : {})
+    });
 
     buildInputGraph();
     buildOutputGraph();
     startMeterLoop();
 
-    audioEnabled = true;
-    document.getElementById('btnTest').disabled  = false;
-    document.getElementById('btnSweep').disabled = false;
-    document.getElementById('btnEnable').textContent = 'Audio enabled';
-    document.getElementById('btnEnable').disabled = true;
-
-    // Route output device
-    const outDevId = document.getElementById('outputDevice').value;
-    if (outputAudio && typeof outputAudio.setSinkId === 'function' && outDevId) {
-      try { await outputAudio.setSinkId(outDevId); } catch(e) {}
-    } else if (!outputAudio || typeof outputAudio.setSinkId !== 'function') {
-      document.getElementById('sinkIdNote').style.display = '';
+    if (typeof outputAudio.setSinkId === 'function') {
+      if (outputDeviceEl.value) {
+        try { await outputAudio.setSinkId(outputDeviceEl.value); } catch (e) { /* keep default */ }
+      }
+    } else {
+      sinkIdNoteEl.classList.remove('hidden');
     }
 
     await learnNoiseFloor();
+
     setStatus('Audio ready', 'green');
+    enableAudioBtn.innerHTML = '<i data-lucide="power"></i>Audio enabled';
+    enableAudioBtn.disabled = true;
+    testBtn.disabled = false;
+    sweepBtn.disabled = false;
+    renderIcons();
 
-    // Wire up device change
-    document.getElementById('inputDevice').addEventListener('change', onInputDeviceChange);
-    document.getElementById('inputChannel').addEventListener('change', onInputChannelChange);
-    document.getElementById('outputDevice').addEventListener('change', onOutputDeviceChange);
-    document.getElementById('outputChannel').addEventListener('change', onOutputChannelChange);
-
-  } catch(e) {
-    setStatus(`Error: ${e.message}`);
-    console.error(e);
+    inputDeviceEl.addEventListener('change', onInputDeviceChange);
+    inputChannelEl.addEventListener('change', onInputChannelChange);
+    outputDeviceEl.addEventListener('change', onOutputDeviceChange);
+    outputChannelEl.addEventListener('change', onOutputChannelChange);
+  } catch (err) {
+    console.error(err);
+    setStatus(`Audio error: ${err.message}`, 'red');
+    enableAudioBtn.disabled = false;
   }
 }
 
-function populateSelect(id, devices, kind) {
-  const sel = document.getElementById(id);
-  sel.innerHTML = '';
-  if (devices.length === 0) {
-    const opt = document.createElement('option');
-    opt.value = '';
-    opt.textContent = kind === 'audioinput' ? 'Default input' : 'Default output';
-    sel.appendChild(opt);
-    return;
-  }
-  devices.forEach((d, i) => {
-    const opt = document.createElement('option');
-    opt.value = d.deviceId;
-    opt.textContent = d.label || `Device ${i + 1}`;
-    sel.appendChild(opt);
-  });
-}
-
-// ─── Input graph ──────────────────────────────────────────────────────────────
+/* ---------- Input graph ---------- */
 function buildInputGraph() {
-  if (sourceNode) { try { sourceNode.disconnect(); } catch(e){} }
-  sourceNode  = audioCtx.createMediaStreamSource(inputStream);
-  splitterNode = audioCtx.createChannelSplitter(2);
+  inputSource = audioCtx.createMediaStreamSource(inputStream);
+  inputSplitter = audioCtx.createChannelSplitter(2);
+  inputSource.connect(inputSplitter);
+
   inputGainNode = audioCtx.createGain();
-  inputGainNode.gain.value = dbToGain(0);
+  inputGainNode.gain.value = dbToGain(parseFloat(inputSensitivityEl.value));
+
   analyserNode = audioCtx.createAnalyser();
   analyserNode.fftSize = FFT_SIZE;
   analyserNode.smoothingTimeConstant = 0.15;
+  inputGainNode.connect(analyserNode);
 
-  sourceNode.connect(splitterNode);
-  connectInputChannel(document.getElementById('inputChannel').value);
+  connectInputChannel(inputChannelEl.value);
 }
 
 function connectInputChannel(ch) {
-  try { splitterNode.disconnect(); } catch(e){}
+  try { inputSplitter.disconnect(); } catch (e) {}
   if (ch === 'mix') {
-    const mixGain = audioCtx.createGain();
-    mixGain.gain.value = 0.5;
-    splitterNode.connect(mixGain, 0);
-    splitterNode.connect(mixGain, 1);
-    mixGain.connect(inputGainNode);
+    const gA = audioCtx.createGain(); gA.gain.value = 0.5;
+    const gB = audioCtx.createGain(); gB.gain.value = 0.5;
+    inputSplitter.connect(gA, 0);
+    inputSplitter.connect(gB, 1);
+    gA.connect(inputGainNode);
+    gB.connect(inputGainNode);
   } else {
-    splitterNode.connect(inputGainNode, parseInt(ch));
+    inputSplitter.connect(inputGainNode, parseInt(ch, 10));
   }
-  inputGainNode.connect(analyserNode);
 }
 
-// ─── Output graph ─────────────────────────────────────────────────────────────
+/* ---------- Output graph ---------- */
 function buildOutputGraph() {
-  outputDest   = audioCtx.createMediaStreamDestination();
-  outputAudio  = new Audio();
-  outputAudio.autoplay = true;
-  outputAudio.srcObject = outputDest.stream;
-  outputAudio.play().catch(()=>{});
-
-  outAnalyser  = audioCtx.createAnalyser();
+  outAnalyser = audioCtx.createAnalyser();
   outAnalyser.fftSize = 1024;
   outAnalyser.smoothingTimeConstant = 0.15;
+
+  outDest = audioCtx.createMediaStreamDestination();
+
+  outputAudio = new Audio();
+  outputAudio.autoplay = true;
+  outputAudio.srcObject = outDest.stream;
+}
+
+function connectOutputChannel(ch) {
+  try { outAnalyser.disconnect(); } catch (e) {}
+  if (!outMerger) return;
+  if (ch === 'both') {
+    outAnalyser.connect(outMerger, 0, 0);
+    outAnalyser.connect(outMerger, 0, 1);
+  } else {
+    outAnalyser.connect(outMerger, 0, parseInt(ch, 10));
+  }
 }
 
 function startOscillator(freq, gainValue) {
-  stopOutput();
-
-  oscNode     = audioCtx.createOscillator();
-  outGainNode = audioCtx.createGain();
-  outMerger   = audioCtx.createChannelMerger(2);
-
-  oscNode.type      = 'sine';
+  if (oscNode) stopOutput();
+  oscNode = audioCtx.createOscillator();
+  oscNode.type = 'sine';
   oscNode.frequency.value = freq;
-  outGainNode.gain.value  = gainValue;
+
+  outGainNode = audioCtx.createGain();
+  outGainNode.gain.value = gainValue;
+
+  outMerger = audioCtx.createChannelMerger(2);
 
   oscNode.connect(outGainNode);
   outGainNode.connect(outAnalyser);
-
-  const ch = document.getElementById('outputChannel').value;
-  if (ch === 'both') {
-    outGainNode.connect(outMerger, 0, 0);
-    outGainNode.connect(outMerger, 0, 1);
-  } else {
-    outGainNode.connect(outMerger, 0, parseInt(ch));
-  }
-  outMerger.connect(outputDest);
+  connectOutputChannel(outputChannelEl.value);
+  outMerger.connect(outDest);
 
   oscNode.start();
-  try { outputAudio.play(); } catch(e){}
+  outputAudio.play().catch(() => {});
 }
 
-// Update frequency and gain in-place during sweep (no stop/restart → no click/gap in buffer)
+function stopOutput() {
+  if (oscNode) {
+    try { oscNode.stop(); } catch (e) {}
+    try { oscNode.disconnect(); } catch (e) {}
+    oscNode = null;
+  }
+  if (outGainNode) {
+    try { outGainNode.disconnect(); } catch (e) {}
+    outGainNode = null;
+  }
+  if (outMerger) {
+    try { outMerger.disconnect(); } catch (e) {}
+    outMerger = null;
+  }
+  if (outAnalyser) {
+    try { outAnalyser.disconnect(); } catch (e) {}   // don't nullify — reused
+  }
+  if (outputAudio) outputAudio.pause();
+}
+
 function setSweepFreq(freq, gainValue) {
   if (!oscNode || !outGainNode) { startOscillator(freq, gainValue); return; }
   oscNode.frequency.setValueAtTime(freq, audioCtx.currentTime);
   outGainNode.gain.setValueAtTime(gainValue, audioCtx.currentTime);
 }
 
-function stopOutput() {
-  if (oscNode) {
-    try { oscNode.stop(); } catch(e){}
-    try { oscNode.disconnect(); } catch(e){}
-    oscNode = null;
+/* ---------- Device change handlers ---------- */
+async function onInputDeviceChange() {
+  if (inputStream) inputStream.getTracks().forEach(t => t.stop());
+  try {
+    inputStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: false, noiseSuppression: false, autoGainControl: false,
+        channelCount: 2, deviceId: { exact: inputDeviceEl.value }
+      }
+    });
+    buildInputGraph();
+    await learnNoiseFloor();
+  } catch (err) {
+    setStatus(`Input device error: ${err.message}`, 'red');
   }
-  if (outGainNode)  { try { outGainNode.disconnect(); }  catch(e){} outGainNode = null; }
-  if (outMerger)    { try { outMerger.disconnect(); }    catch(e){} outMerger = null; }
-  if (outAnalyser)  { try { outAnalyser.disconnect(); }  catch(e){} }
-  if (outputAudio)  { try { outputAudio.pause(); }       catch(e){} }
 }
 
-// ─── Noise Floor ──────────────────────────────────────────────────────────────
+async function onInputChannelChange() {
+  connectInputChannel(inputChannelEl.value);
+  await learnNoiseFloor();
+}
+
+async function onOutputDeviceChange() {
+  if (outputAudio && typeof outputAudio.setSinkId === 'function') {
+    try { await outputAudio.setSinkId(outputDeviceEl.value); } catch (e) {
+      setStatus(`Output device error: ${e.message}`, 'red');
+    }
+  }
+}
+
+function onOutputChannelChange() {
+  if (oscNode && outMerger) connectOutputChannel(outputChannelEl.value);
+}
+
+/* ---------- Noise floor ---------- */
 async function learnNoiseFloor() {
-  if (isSweeping) return;
+  if (!analyserNode || isSweeping) return;
   stopOutput();
-
-  const devId = document.getElementById('inputDevice').value || 'default';
-  const ch    = document.getElementById('inputChannel').value;
-  const key   = `${devId}:${ch}`;
-
-  setStatus('Learning noise floor');
+  setStatus('Learning noise floor', 'orange');
   await sleep(120);
-
   const buf = new Float32Array(analyserNode.fftSize);
-  let sumSq = 0;
-  const N = 14;
-  for (let i = 0; i < N; i++) {
+  let sum = 0;
+  for (let i = 0; i < 14; i++) {
     analyserNode.getFloatTimeDomainData(buf);
     const r = rms(buf);
-    sumSq += r * r;
+    sum += r * r;
     await sleep(25);
   }
-  const noiseRms = Math.sqrt(sumSq / N);
-  noiseFloorCache[key] = noiseRms;
-  activeNoiseFloor = noiseRms;
-
-  const db = gainToDb(noiseRms);
-  setStatus(`Noise floor ${db.toFixed(1)} dBFS`);
+  noiseRms = Math.sqrt(sum / 14);
+  noiseFloorCache[`${inputDeviceEl.value}:${inputChannelEl.value}`] = noiseRms;
+  setStatus(`Noise floor ${gainToDb(noiseRms).toFixed(1)} dBFS`, 'orange');
 }
 
-function getActiveNoise() {
-  const devId = document.getElementById('inputDevice').value || 'default';
-  const ch    = document.getElementById('inputChannel').value;
-  return noiseFloorCache[`${devId}:${ch}`] || 0;
+/* ---------- Meters ---------- */
+function levelToPct(db) {
+  return Math.max(0, Math.min(100, (db + 60) / 60 * 100));
 }
 
-// ─── Meter loop ───────────────────────────────────────────────────────────────
 function startMeterLoop() {
-  if (meterAnimId) cancelAnimationFrame(meterAnimId);
-  const inBuf  = new Float32Array(analyserNode.fftSize);
-  const outBuf = new Float32Array(outAnalyser ? outAnalyser.fftSize : 1024);
-
-  function loop() {
-    analyserNode.getFloatTimeDomainData(inBuf);
-    const inRms  = rms(inBuf);
-    const inDb   = gainToDb(inRms);
-    updateMeter('In', inDb);
-
+  if (meterTimer) clearInterval(meterTimer);
+  const inBuf = new Float32Array(FFT_SIZE);
+  const outBuf = new Float32Array(1024);
+  meterTimer = setInterval(() => {
+    if (analyserNode) {
+      analyserNode.getFloatTimeDomainData(inBuf);
+      const db = gainToDb(rms(inBuf));
+      inputDbEl.textContent = `${db.toFixed(1)} dBFS`;
+      inputBarEl.style.width = `${levelToPct(db)}%`;
+      inputBarEl.classList.toggle('hot', db > -3);
+    }
     if (outAnalyser && oscNode) {
       outAnalyser.getFloatTimeDomainData(outBuf);
-      const outRms = rms(outBuf);
-      const outDb  = gainToDb(outRms);
-      updateMeter('Out', outDb);
+      const db = gainToDb(rms(outBuf));
+      outputDbEl.textContent = `${db.toFixed(1)} dBFS`;
+      outputBarEl.style.width = `${levelToPct(db)}%`;
+      outputBarEl.classList.toggle('hot', db > -3);
     } else {
-      updateMeter('Out', -Infinity);
+      outputDbEl.textContent = '-- dBFS';
+      outputBarEl.style.width = '0%';
+      outputBarEl.classList.remove('hot');
     }
-
-    meterAnimId = requestAnimationFrame(loop);
-  }
-  loop();
+  }, 100);
 }
 
-function updateMeter(which, db) {
-  const id  = which === 'In' ? 'In' : 'Out';
-  const val = document.getElementById(`meter${id}Val`);
-  const bar = document.getElementById(`meter${id}Bar`);
-  if (!isFinite(db) || db < MIN_DB) {
-    val.textContent = '-- dBFS';
-    bar.style.width = '0%';
-    bar.classList.remove('clipping');
-    return;
-  }
-  val.textContent = `${db.toFixed(1)} dBFS`;
-  const pct = Math.max(0, Math.min(100, (db + 60) / 60 * 100));
-  bar.style.width = pct + '%';
-  bar.classList.toggle('clipping', db > -3);
-}
+/* ---------- Measurement ---------- */
+let lastRawDb = MIN_DB;   // raw buffer level of the most recent reading, for clip detection
 
-// ─── Test Signal ──────────────────────────────────────────────────────────────
-function toggleTestTone() {
-  if (!audioEnabled) return;
-  if (isTestTone) {
-    stopTestTone();
-  } else {
-    startTestTone();
-  }
-}
-
-function startTestTone() {
-  if (isSweeping) return;
-  audioCtx.resume();
-  startOscillator(1000, 0.42);
-  isTestTone = true;
-  document.getElementById('currentFreq').textContent = '1.00 kHz';
-  setStatus('Playing test tone');
-  document.getElementById('btnStop').disabled = false;
-
-  const btn = document.getElementById('btnTest');
-  btn.innerHTML = '<i data-lucide="pause" width="14" height="14"></i> Stop test';
-  renderIcons();
-}
-
-function stopTestTone() {
-  stopOutput();
-  isTestTone = false;
-  document.getElementById('currentFreq').textContent = '-- Hz';
-  setStatus('Audio ready', 'green');
-  document.getElementById('btnStop').disabled = true;
-
-  const btn = document.getElementById('btnTest');
-  btn.innerHTML = '<i data-lucide="audio-lines" width="14" height="14"></i> Test Signal';
-  renderIcons();
-}
-
-// ─── Sweep ────────────────────────────────────────────────────────────────────
-async function startSweep() {
-  if (!audioEnabled || isSweeping) return;
-  isSweeping  = true;
-  sweepAbort  = false;
-  chartData   = [];
-  chartPointCloud = [];
-
-  if (isTestTone) stopTestTone();
-
-  document.getElementById('btnSweep').disabled = true;
-  document.getElementById('btnStop').disabled  = false;
-  document.getElementById('btnStop').classList.add('sweeping');
-
-  const start    = parseInt(document.getElementById('startFreq').value)    || DEFAULT_START_FREQ;
-  const end      = parseInt(document.getElementById('endFreq').value)      || DEFAULT_END_FREQ;
-  const duration = parseFloat(document.getElementById('scanDuration').value) || 10;
-  const readings = parseInt(document.getElementById('readingsPerPoint').value) || 15;
-  const sineOnly = false;
-  const atten    = 6.0;
-  const sens     = 0;
-
-  const scanStart = Math.max(20, start - PRESCAN_HZ);
-  const points    = logspace(scanStart, end, POINT_COUNT);
-  const noise     = getActiveNoise();
-
-  const msPerPoint = (duration * 1000) / POINT_COUNT;
-  // Minimum settle = one full FFT buffer flush so no old-frequency content remains
-  const fftRefreshMs = Math.round(FFT_SIZE / (audioCtx.sampleRate || 44100) * 1000);
-  const settleMs = Math.max(msPerPoint * 0.3, fftRefreshMs);
-  // Spread remaining time across readings; always at least 1 reading
-  const remainingMs = Math.max(0, msPerPoint - settleMs);
-  const effectiveReadings = Math.max(1, Math.min(readings, Math.floor(remainingMs / 20) + 1));
-  const readMs = effectiveReadings > 1 ? Math.floor(remainingMs / effectiveReadings) : 5;
-
-  document.getElementById('progress').textContent = '0%';
-
-  // Start oscillator once — frequency is updated in-place (no stop/start = no click in buffer)
-  const firstGain = 0.42 * dbToGain(-(atten * Math.max(0, Math.log2(points[0] / start))));
-  startOscillator(points[0], firstGain);
-
-  try {
-    for (let pi = 0; pi < points.length; pi++) {
-      if (sweepAbort) break;
-
-      const freq = points[pi];
-      const isPreScan = freq < start;
-
-      // Update frequency and gain in-place — continuous signal, no gap
-      const octAbove = Math.max(0, Math.log2(freq / start));
-      const gain = 0.42 * dbToGain(-(atten * octAbove));
-      setSweepFreq(freq, gain);
-
-      if (isPreScan) {
-        setStatus('Calibrating', 'orange');
-        const freqEl = document.getElementById('currentFreq');
-        freqEl.textContent = 'Calibrating';
-        freqEl.className   = 'status-value red';
-      } else {
-        setStatus('Sweeping', 'red');
-        const freqEl = document.getElementById('currentFreq');
-        freqEl.textContent = fmtHz(freq);
-        freqEl.className   = 'status-value';
-      }
-
-      const pct = Math.round((pi + 1) / POINT_COUNT * 100);
-      document.getElementById('progress').textContent = `${pct}%`;
-
-      // Wait for FFT buffer to flush old frequency content
-      await sleep(settleMs);
-      if (sweepAbort) break;
-
-      // Take readings
-      const dbReadings = [];
-      for (let ri = 0; ri < effectiveReadings; ri++) {
-        if (sweepAbort) break;
-        const lvl = await measureLevel(freq, sineOnly, noise);
-        const db  = gainToDb(Math.max(1e-10, lvl)) + sens;
-        dbReadings.push(db);
-        if (ri < effectiveReadings - 1) await sleep(readMs);
-      }
-
-      if (!isPreScan && dbReadings.length > 0) {
-        const avgDb = dbReadings.reduce((a, b) => a + b, 0) / dbReadings.length;
-        chartData.push({ x: freq, rawDb: avgDb });
-        dbReadings.forEach(d => chartPointCloud.push({ x: freq, y: d }));
-        updateChart();
-      }
-    }
-  } finally {
-    stopOutput();
-    isSweeping  = false;
-    sweepAbort  = false;
-
-    document.getElementById('btnSweep').disabled = false;
-    document.getElementById('btnStop').disabled  = true;
-    document.getElementById('btnStop').classList.remove('sweeping');
-
-    if (!sweepAbort) {
-      document.getElementById('currentFreq').textContent = '-- Hz';
-      document.getElementById('currentFreq').className   = 'status-value';
-      document.getElementById('progress').textContent    = '100%';
-      activePeakSource = 'current';
-      setStatus('Sweep complete', 'green');
-    } else {
-      setStatus('Stopped');
-    }
-    updateChart();
-    updatePeakResponse();
-  }
-}
-
-async function measureLevel(freq, sineOnly, noise) {
-  const buf = new Float32Array(analyserNode.fftSize);
+function measureLevel(freq, sineOnly, noise) {
+  const N = analyserNode.fftSize;
+  const buf = new Float32Array(N);
   analyserNode.getFloatTimeDomainData(buf);
-  let lvl;
+  lastRawDb = gainToDb(rms(buf));
 
+  let lvl;
   if (sineOnly) {
-    const N = buf.length;
-    let sinSum = 0, cosSum = 0;
     const w = (2 * Math.PI * freq) / audioCtx.sampleRate;
+    let sinSum = 0, cosSum = 0;
     for (let i = 0; i < N; i++) {
       sinSum += buf[i] * Math.sin(w * i);
       cosSum += buf[i] * Math.cos(w * i);
@@ -1339,107 +1218,249 @@ async function measureLevel(freq, sineOnly, noise) {
   return lvl;
 }
 
-function stopSweepOrTest() {
-  if (isSweeping) {
-    sweepAbort = true;
-  } else if (isTestTone) {
-    stopTestTone();
-  }
+/* ---------- Sweep ---------- */
+function sweepGain(freq, startHz, attenPerOct) {
+  const octavesAboveStart = Math.max(0, Math.log2(freq / startHz));
+  return 0.42 * dbToGain(-(attenPerOct * octavesAboveStart));
 }
 
-// ─── Device change handlers ───────────────────────────────────────────────────
-async function onInputDeviceChange() {
-  if (!audioEnabled) return;
-  const devId = document.getElementById('inputDevice').value;
-  if (inputStream) inputStream.getTracks().forEach(t => t.stop());
-  inputStream = await navigator.mediaDevices.getUserMedia({
-    audio: {
-      deviceId: devId ? { exact: devId } : true,
-      echoCancellation: false,
-      noiseSuppression: false,
-      autoGainControl: false,
-      channelCount: 2
+async function startSweep() {
+  if (!audioCtx || isSweeping) return;
+
+  chartData = [];
+  chartPointCloud = [];
+  if (isTestTone) stopTestTone(true);
+
+  isSweeping = true;
+  sweepAbort = false;
+  sweepBtn.disabled = true;
+  testBtn.disabled = true;
+  stopBtn.disabled = false;
+  stopBtn.classList.add('sweeping');
+
+  const start = parseFloat(startFreqEl.value) || DEFAULT_START_FREQ;
+  const end = parseFloat(endFreqEl.value) || DEFAULT_END_FREQ;
+  const duration = parseFloat(scanDurationEl.value);
+  const readings = parseInt(readingsPerPointEl.value, 10);
+  const atten = parseFloat(outputAttenuationEl.value);
+  const sens = parseFloat(inputSensitivityEl.value);
+  const sineOnly = sineOnlyEl.checked;
+  const noise = noiseRms;
+
+  const scanStart = Math.max(20, start - PRESCAN_HZ);
+  const points = logspace(scanStart, end, POINT_COUNT);
+
+  const msPerPoint = (duration * 1000) / POINT_COUNT;
+  const fftRefreshMs = Math.round(FFT_SIZE / audioCtx.sampleRate * 1000);
+  const settleMs = Math.max(msPerPoint * 0.3, fftRefreshMs);
+  const remainingMs = Math.max(0, msPerPoint - settleMs);
+  const effectiveReadings = Math.max(1, Math.min(readings, Math.floor(remainingMs / 20) + 1));
+  const readMs = effectiveReadings > 1 ? Math.floor(remainingMs / effectiveReadings) : 5;
+
+  const progressBar = $('sweepProgressBar');
+  let sweepClipped = false;
+
+  try {
+    await audioCtx.resume();
+    progressBar.style.opacity = '1';
+    progressBar.style.width = '0%';
+    startOscillator(points[0], sweepGain(points[0], start, atten));
+
+    for (let i = 0; i < points.length; i++) {
+      if (sweepAbort) break;
+      const freq = points[i];
+      setSweepFreq(freq, sweepGain(freq, start, atten));
+
+      if (freq < start) {
+        setStatus('Calibrating', 'orange');
+        currentFreqEl.textContent = 'Calibrating';
+        currentFreqEl.classList.add('red');
+      } else {
+        setStatus(sweepClipped ? 'Sweeping — input clipping!' : 'Sweeping', 'red');
+        currentFreqEl.textContent = fmtHz(freq);
+        currentFreqEl.classList.remove('red');
+      }
+      const pct = Math.round(i / (points.length - 1) * 100);
+      progressEl.textContent = `${pct}%`;
+      progressBar.style.width = `${pct}%`;
+
+      await sleep(settleMs);
+      if (sweepAbort) break;
+
+      let sum = 0;
+      for (let r = 0; r < effectiveReadings; r++) {
+        const lvl = measureLevel(freq, sineOnly, noise);
+        if (lastRawDb > -3) sweepClipped = true;
+        const db = gainToDb(Math.max(1e-10, lvl)) + sens;
+        sum += db;
+        chartPointCloud.push({ x: freq, y: db });
+        if (r < effectiveReadings - 1) await sleep(readMs);
+      }
+      const avgDb = Math.max(MIN_DB, sum / effectiveReadings);
+
+      if (freq >= start) {
+        chartData.push({ x: freq, rawDb: avgDb });
+        updateChart();
+      }
     }
-  });
-  buildInputGraph();
-  await learnNoiseFloor();
-}
 
-async function onInputChannelChange() {
-  if (!audioEnabled) return;
-  connectInputChannel(document.getElementById('inputChannel').value);
-  await learnNoiseFloor();
-}
-
-async function onOutputDeviceChange() {
-  if (!audioEnabled) return;
-  const devId = document.getElementById('outputDevice').value;
-  if (outputAudio && typeof outputAudio.setSinkId === 'function' && devId) {
-    try { await outputAudio.setSinkId(devId); } catch(e) {}
-  }
-}
-
-function onOutputChannelChange() {
-  // Reconnect if oscillator is running
-  if (oscNode && outGainNode && outMerger) {
-    try { outGainNode.disconnect(outMerger); } catch(e){}
-    const ch = document.getElementById('outputChannel').value;
-    if (ch === 'both') {
-      outGainNode.connect(outMerger, 0, 0);
-      outGainNode.connect(outMerger, 0, 1);
+    if (sweepAbort) {
+      setStatus('Stopped');
     } else {
-      outGainNode.connect(outMerger, 0, parseInt(ch));
+      currentFreqEl.textContent = '-- Hz';
+      progressEl.textContent = '100%';
+      progressBar.style.width = '100%';
+      activePeakSource = 'current';
+      if (sweepClipped) {
+        setStatus('Sweep complete — input clipped, reduce level', 'orange');
+        showToast('Input exceeded −3 dBFS during the sweep — results may be distorted', 'orange');
+      } else {
+        setStatus('Sweep complete', 'green');
+      }
+      updateChart();
+      scheduleSave();
     }
+  } catch (err) {
+    console.error(err);
+    setStatus(`Sweep error: ${err.message}`, 'red');
+  } finally {
+    stopOutput();
+    isSweeping = false;
+    sweepBtn.disabled = false;
+    testBtn.disabled = false;
+    stopBtn.disabled = true;
+    stopBtn.classList.remove('sweeping');
+    currentFreqEl.classList.remove('red');
+    progressBar.style.opacity = '0';
+    setTimeout(() => { if (!isSweeping) progressBar.style.width = '0%'; }, 450);
   }
 }
 
-// ─── Input sensitivity ────────────────────────────────────────────────────────
+/* ---------- Test signal ---------- */
+function startTestTone() {
+  audioCtx.resume();
+  startOscillator(1000, 0.42);
+  isTestTone = true;
+  currentFreqEl.textContent = '1.00 kHz';
+  setStatus('Playing test tone');
+  stopBtn.disabled = false;
+  stopBtn.classList.remove('sweeping');
+  testBtn.innerHTML = '<i data-lucide="pause"></i>Stop test';
+  renderIcons();
 
+  // Sanity check: after the tone has settled, the input should sit well above the noise floor
+  setTimeout(() => {
+    if (!isTestTone || !analyserNode) return;
+    const buf = new Float32Array(analyserNode.fftSize);
+    analyserNode.getFloatTimeDomainData(buf);
+    const lvlDb = gainToDb(rms(buf));
+    const noiseDb = gainToDb(Math.max(1e-10, noiseRms));
+    if (lvlDb < noiseDb + 6) {
+      setStatus('No input signal detected — check routing and cables', 'orange');
+      showToast('Test tone is playing but the input is silent — check routing', 'orange');
+    }
+  }, 1500);
+}
 
-document.getElementById('scanDuration').addEventListener('input', e => {
-  document.getElementById('scanDurationVal').textContent = `${e.target.value} s`;
-});
+function stopTestTone(silent) {
+  stopOutput();
+  isTestTone = false;
+  currentFreqEl.textContent = '-- Hz';
+  if (!silent) setStatus('Audio ready', 'green');
+  stopBtn.disabled = true;
+  testBtn.innerHTML = '<i data-lucide="audio-lines"></i>Test Signal';
+  renderIcons();
+}
 
-document.getElementById('readingsPerPoint').addEventListener('input', e => {
-  document.getElementById('readingsPerPointVal').textContent = e.target.value;
-});
+function toggleTestTone() {
+  if (!audioCtx) return;
+  if (isTestTone) stopTestTone();
+  else startTestTone();
+}
 
+function onStop() {
+  if (isSweeping) sweepAbort = true;
+  else if (isTestTone) stopTestTone();
+}
 
-document.getElementById('graphSmoothness').addEventListener('input', e => {
-  document.getElementById('smoothnessVal').textContent = e.target.value;
-  updateChart();
-});
+/* ---------- Data processing ---------- */
+function processData(rawPoints, startHz) {
+  const offsetPerOct = parseFloat(graphOffsetEl.value);
+  const smoothness = parseInt(graphSmoothnessEl.value, 10);
 
-document.getElementById('graphOffset').addEventListener('input', e => {
-  const v = parseFloat(e.target.value);
-  document.getElementById('graphOffsetVal').textContent = `${v >= 0 ? '+' : ''}${v.toFixed(1)} dB/oct`;
-  updateChart();
-});
+  let pts = rawPoints
+    .filter(p => p.x >= startHz)
+    .map(p => ({ x: p.x, y: p.rawDb + offsetPerOct * Math.log2(p.x / startHz) }));
+  if (pts.length === 0) return [];
 
-// Recalculate on any setting that affects the displayed curve
-['startFreq','endFreq'].forEach(id => {
-  document.getElementById(id).addEventListener('input', updateChart);
-  document.getElementById(id).addEventListener('change', updateChart);
-});
+  const radius = Math.max(1, Math.round(smoothness * 1.5));
+  const sigma = Math.max(1, radius / 2);
+  const smoothed = pts.map((p, i) => {
+    let wSum = 0, vSum = 0;
+    for (let d = -radius; d <= radius; d++) {
+      const j = i + d;
+      if (j < 0 || j >= pts.length) continue;
+      const w = Math.exp(-(d * d) / (2 * sigma * sigma));
+      wSum += w;
+      vSum += w * pts[j].y;
+    }
+    return { x: p.x, y: vSum / wSum };
+  });
 
-// ─── Chart ────────────────────────────────────────────────────────────────────
-let bodeChart = null;
+  const base = smoothed[0].y;
+  return smoothed.map(p => ({ x: p.x, y: (p.y - base) / 3 }));
+}
+
+/* ---------- Chart ---------- */
+// Draws a dot + frequency label at each curve's resonance peak
+const peakMarkerPlugin = {
+  id: 'peakMarkers',
+  afterDatasetsDraw(chart) {
+    const { ctx, chartArea } = chart;
+    chart.data.datasets.forEach((ds, di) => {
+      if (!ds.data || ds.data.length < 3) return;
+      const meta = chart.getDatasetMeta(di);
+      if (!meta.visible) return;
+      let pi = 0;
+      for (let i = 1; i < ds.data.length; i++) if (ds.data[i].y > ds.data[pi].y) pi = i;
+      const el = meta.data[pi];
+      if (!el) return;
+      const x = el.x, y = el.y;
+      if (x < chartArea.left || x > chartArea.right) return;
+      ctx.save();
+      ctx.fillStyle = ds.borderColor;
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '600 10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      const ty = Math.max(chartArea.top + 12, y - 7);
+      ctx.fillText(fmtHz(ds.data[pi].x), x, ty);
+      ctx.restore();
+    });
+  }
+};
 
 function initChart() {
-  const ctx = document.getElementById('bodeChart').getContext('2d');
+  const ctx = $('bodeChart').getContext('2d');
   bodeChart = new Chart(ctx, {
     type: 'line',
     data: { datasets: [] },
+    plugins: [peakMarkerPlugin],
     options: {
+      animation: false,
       responsive: true,
       maintainAspectRatio: false,
-      animation: false,
+      interaction: { mode: 'index', intersect: false },
       scales: {
         x: {
           type: 'logarithmic',
           title: { display: true, text: 'Generated frequency', color: '#7a8099' },
           grid: { color: '#2a2f3f' },
-          ticks: { color: '#7a8099', maxTicksLimit: 10 }
+          ticks: { color: '#7a8099', maxTicksLimit: 10 },
+          min: DEFAULT_START_FREQ,
+          max: DEFAULT_END_FREQ
         },
         y: {
           title: { display: true, text: 'Normalized measured Input (approx.)', color: '#7a8099' },
@@ -1453,8 +1474,7 @@ function initChart() {
           position: 'top',
           labels: {
             color: '#d4d8e8',
-            boxWidth: 14,
-            boxHeight: 2,
+            boxWidth: 14, boxHeight: 2,
             padding: 12,
             font: { size: 11 },
             filter: item => item.text !== 'Current'
@@ -1470,7 +1490,7 @@ function initChart() {
           bodyColor: '#d4d8e8',
           callbacks: {
             title: items => fmtHz(items[0].parsed.x),
-            label: item  => ` ${item.dataset.label || 'Current'}: ${item.parsed.y.toFixed(2)} dB`
+            label: item => ` ${item.dataset.label || 'Current'}: ${item.parsed.y.toFixed(2)} dB`
           }
         }
       }
@@ -1478,84 +1498,38 @@ function initChart() {
   });
 }
 
-function getSelectedStart() { return parseInt(document.getElementById('startFreq').value) || DEFAULT_START_FREQ; }
-function getSelectedEnd()   { return parseInt(document.getElementById('endFreq').value)   || DEFAULT_END_FREQ; }
-
-function processData(rawPoints, startHz) {
-  if (!rawPoints || rawPoints.length === 0) return [];
-  const smooth   = parseInt(document.getElementById('graphSmoothness').value);
-  const offset   = parseFloat(document.getElementById('graphOffset').value);
-
-  // 1. Apply graph offset
-  let pts = rawPoints
-    .filter(p => p.x >= startHz)
-    .map(p => ({
-      x: p.x,
-      y: p.rawDb + offset * Math.log2(p.x / startHz)
-    }));
-
-  if (pts.length === 0) return [];
-
-  // 2. Smooth
-  const radius = Math.max(1, Math.round(smooth * 1.5));
-  const sigma  = Math.max(1, radius / 2);
-  pts = pts.map((pt, i) => {
-    let wSum = 0, vSum = 0;
-    for (let j = Math.max(0, i - radius); j <= Math.min(pts.length - 1, i + radius); j++) {
-      const d = j - i;
-      const w = Math.exp(-(d * d) / (2 * sigma * sigma));
-      wSum += w;
-      vSum += w * pts[j].y;
-    }
-    return { x: pt.x, y: vSum / wSum };
-  });
-
-  // 3. Already filtered above start. 4. Normalize to first point
-  // Do NOT DIVIDE BY 3 ANYMORE
-  const base = pts[0].y;
-  //pts = pts.map(p => ({ x: p.x, y: (p.y - base) / 3 }));
-  pts = pts.map(p => ({ x: p.x, y: (p.y - base) / 1 }));
-
-  return pts;
-}
-
 function updateChart() {
-  if (!bodeChart) return;
+  const start = parseFloat(startFreqEl.value) || DEFAULT_START_FREQ;
+  const end = parseFloat(endFreqEl.value) || DEFAULT_END_FREQ;
 
-  const startHz = getSelectedStart();
-  const endHz   = getSelectedEnd();
   const datasets = [];
+  const allY = [];
+  let maxEnd = end;
 
-  // Current measurement
-  if (chartData.length > 0) {
-    const pts = processData(chartData, startHz);
-    if (pts.length > 0) {
-      datasets.push({
-        label: 'Current',
-        data: pts,
-        borderColor: '#ff3b4f',
-        backgroundColor: 'transparent',
-        borderWidth: 2,
-        pointRadius: 0,
-        tension: 0.3,
-        parsing: false
-      });
-    }
+  if (chartData.length) {
+    const pts = processData(chartData, start);
+    pts.forEach(p => allY.push(p.y));
+    datasets.push({
+      label: 'Current',
+      data: pts,
+      borderColor: '#ff3b4f',
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.3,
+      parsing: false
+    });
   }
 
-  // Slots
-  let maxSlotEnd = endHz;
   slots.forEach((slot, i) => {
-    if (!slot.visible || !slot.data || slot.data.length === 0) return;
-    const slotStart = slot.start || startHz;
-    if (slot.end > maxSlotEnd) maxSlotEnd = slot.end;
+    if (!slot.visible || !slot.data.length) return;
+    const slotStart = slot.start != null ? slot.start : start;
     const pts = processData(slot.data, slotStart);
-    if (pts.length === 0) return;
+    pts.forEach(p => allY.push(p.y));
+    if (slot.end != null) maxEnd = Math.max(maxEnd, slot.end);
     datasets.push({
-      label: slot.name || `Slot ${i + 1}`,
+      label: slot.name,
       data: pts,
-      borderColor: SLOT_COLORS[i],
-      backgroundColor: 'transparent',
+      borderColor: slotColor(i),
       borderWidth: 2,
       pointRadius: 0,
       tension: 0.3,
@@ -1563,132 +1537,159 @@ function updateChart() {
     });
   });
 
+  $('chartEmpty').classList.toggle('hidden', datasets.length > 0);
   bodeChart.data.datasets = datasets;
+  bodeChart.options.scales.x.min = start;
+  bodeChart.options.scales.x.max = Math.max(end, maxEnd);
 
-  // X axis range
-  bodeChart.options.scales.x.min = startHz;
-  bodeChart.options.scales.x.max = Math.max(endHz, maxSlotEnd);
-
-  // Y axis auto-fit
-  const allY = datasets.flatMap(d => d.data.map(p => p.y));
-  if (allY.length > 0) {
-    const mn  = Math.min(...allY);
-    const mx  = Math.max(...allY);
-    const margin = Math.max(1.5, (mx - mn) * 0.12);
-    bodeChart.options.scales.y.min = mn - margin;
-    bodeChart.options.scales.y.max = mx + margin;
+  if (allY.length) {
+    const yMin = Math.min(...allY);
+    const yMax = Math.max(...allY);
+    const margin = Math.max(1.5, (yMax - yMin) * 0.12);
+    bodeChart.options.scales.y.min = yMin - margin;
+    bodeChart.options.scales.y.max = yMax + margin;
+  } else {
+    bodeChart.options.scales.y.min = undefined;
+    bodeChart.options.scales.y.max = undefined;
   }
 
   bodeChart.update();
   updatePeakResponse();
 }
 
-// ─── Peak Response ────────────────────────────────────────────────────────────
+/* ---------- Peak Response ---------- */
 function updatePeakResponse() {
-  const dbEl   = document.getElementById('peakResponse');
-  const freqEl = document.getElementById('peakFreq');
   let pts = null;
-
-  if (activePeakSource === 'current' && chartData.length > 0) {
-    pts = processData(chartData, getSelectedStart());
+  if (activePeakSource === 'current' && chartData.length) {
+    pts = processData(chartData, parseFloat(startFreqEl.value) || DEFAULT_START_FREQ);
   } else if (typeof activePeakSource === 'number') {
     const slot = slots[activePeakSource];
-    if (slot && slot.visible && slot.data && slot.data.length > 0) {
-      pts = processData(slot.data, slot.start || getSelectedStart());
+    if (slot && slot.visible && slot.data.length) {
+      pts = processData(slot.data, slot.start != null ? slot.start : (parseFloat(startFreqEl.value) || DEFAULT_START_FREQ));
     }
   }
-
-  if (!pts || pts.length === 0) {
-    dbEl.textContent   = '--';
-    freqEl.textContent = '';
+  if (!pts || !pts.length) {
+    peakFreqEl.textContent = '';
+    peakDbEl.textContent = '--';
     return;
   }
   let peakIdx = 0;
-  for (let i = 1; i < pts.length; i++) {
-    if (pts[i].y > pts[peakIdx].y) peakIdx = i;
-  }
-  freqEl.textContent = fmtHz(pts[peakIdx].x);
-  dbEl.textContent   = fmtDb(pts[peakIdx].y);
+  for (let i = 1; i < pts.length; i++) if (pts[i].y > pts[peakIdx].y) peakIdx = i;
+  peakFreqEl.textContent = fmtHz(pts[peakIdx].x);
+  peakDbEl.textContent = fmtDb(pts[peakIdx].y);
 }
 
-// ─── Slots ────────────────────────────────────────────────────────────────────
+/* ---------- Slots ---------- */
+function slotMeta(slot) {
+  return slot.data.length
+    ? `${slot.data.length} pts · ${Math.round(slot.start)}–${Math.round(slot.end)} Hz`
+    : 'Empty';
+}
+
 function buildSlotUI() {
-  const list = document.getElementById('slotList');
-  list.innerHTML = '';
+  slotListEl.innerHTML = '';
   slots.forEach((slot, i) => {
     const div = document.createElement('div');
     div.className = 'slot';
-    div.id = `slot-${i}`;
     div.innerHTML = `
-      <div class="slot-header">
-        <div class="slot-dot" style="background:${SLOT_COLORS[i]}"></div>
-        <input class="slot-name" type="text" value="${slot.name}" data-slot="${i}">
-        <input type="checkbox" title="Show" data-slot-show="${i}" ${slot.visible ? 'checked' : ''} style="accent-color:${SLOT_COLORS[i]};cursor:pointer;">
+      <div class="slot-head">
+        <span class="slot-dot" style="background:${slotColor(i)};color:${slotColor(i)}"></span>
+        <input class="slot-name" data-slot="${i}" value="${slot.name}">
+        <input type="checkbox" data-slot-show="${i}" style="accent-color:${SLOT_COLORS[i]}" title="Show/hide" ${slot.visible ? 'checked' : ''}>
       </div>
       <div class="slot-actions">
-        <button class="slot-btn" data-slot-store="${i}">Store</button>
-        <button class="slot-btn" data-slot-save="${i}">Save</button>
-        <label class="slot-btn" style="cursor:pointer;">Load<input type="file" accept=".txt,.json" style="display:none" data-slot-load="${i}"></label>
+        <button class="btn btn-sm" data-slot-store="${i}">Store</button>
+        <button class="btn btn-sm" data-slot-save="${i}">Save</button>
+        <label class="btn btn-sm">Load<input type="file" accept=".bode,.txt,.json" data-slot-load="${i}" class="hidden"></label>
       </div>
-      <div class="slot-meta" id="slot-meta-${i}">${slot.data ? `${slot.data.length} pts · ${fmtHz(slot.start)}–${fmtHz(slot.end)}` : 'Empty'}</div>
-    `;
-    list.appendChild(div);
+      <div class="slot-meta" id="slotMeta${i}">${slotMeta(slot)}</div>`;
+
+    div.addEventListener('dragover', e => { e.preventDefault(); div.classList.add('dragover'); });
+    div.addEventListener('dragleave', () => div.classList.remove('dragover'));
+    div.addEventListener('drop', e => {
+      e.preventDefault();
+      e.stopPropagation();
+      div.classList.remove('dragover');
+      const file = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file) loadSlotFromFile(i, file);
+    });
+
+    slotListEl.appendChild(div);
   });
 
-  // Bind events
-  list.querySelectorAll('.slot-name').forEach(inp => {
+  slotListEl.querySelectorAll('.slot-name').forEach(inp => {
     inp.addEventListener('input', e => {
-      slots[e.target.dataset.slot].name = e.target.value;
+      const i = +e.target.dataset.slot;
+      slots[i].name = e.target.value || `Slot ${i + 1}`;
+      updateChart();
     });
   });
-
-  list.querySelectorAll('[data-slot-show]').forEach(cb => {
+  slotListEl.querySelectorAll('[data-slot-show]').forEach(cb => {
     cb.addEventListener('change', e => {
-      const i = parseInt(e.target.dataset.slotShow);
+      const i = +e.target.dataset.slotShow;
       slots[i].visible = e.target.checked;
       if (e.target.checked) activePeakSource = i;
       updateChart();
     });
   });
-
-  list.querySelectorAll('[data-slot-store]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = parseInt(e.target.dataset.slotStore);
-      storeSlot(i);
-    });
+  slotListEl.querySelectorAll('[data-slot-store]').forEach(btn => {
+    btn.addEventListener('click', () => storeSlot(+btn.dataset.slotStore, btn));
   });
-
-  list.querySelectorAll('[data-slot-save]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      const i = parseInt(e.target.dataset.slotSave);
-      saveSlot(i);
-    });
+  slotListEl.querySelectorAll('[data-slot-save]').forEach(btn => {
+    btn.addEventListener('click', e => saveSlot(+e.target.dataset.slotSave));
   });
-
-  list.querySelectorAll('[data-slot-load]').forEach(inp => {
-    inp.addEventListener('change', e => {
-      const i = parseInt(e.target.dataset.slotLoad);
-      loadSlot(i, e.target.files[0]);
-    });
+  slotListEl.querySelectorAll('[data-slot-load]').forEach(inp => {
+    inp.addEventListener('change', e => loadSlot(+e.target.dataset.slotLoad, e.target));
   });
 }
 
-function storeSlot(i) {
-  if (chartData.length === 0) return;
-  slots[i].data    = chartData.map(p => ({ ...p }));
-  slots[i].start   = getSelectedStart();
-  slots[i].end     = getSelectedEnd();
-  slots[i].visible = true;
+function refreshSlotUI(i) {
+  $(`slotMeta${i}`).textContent = slotMeta(slots[i]);
+  slotListEl.querySelector(`[data-slot-show="${i}"]`).checked = slots[i].visible;
+  slotListEl.querySelector(`[data-slot="${i}"]`).value = slots[i].name;
+}
+
+function storeSlot(i, btn) {
+  if (!chartData.length) {
+    showToast('No measurement to store — run a sweep first', 'orange');
+    return;
+  }
+  const slot = slots[i];
+
+  // Overwrite protection: a filled slot needs a second click within 2s
+  if (slot.data.length && btn && !btn.classList.contains('confirm')) {
+    btn.classList.add('confirm');
+    btn.textContent = 'Sure?';
+    btn._confirmTimer = setTimeout(() => {
+      btn.classList.remove('confirm');
+      btn.textContent = 'Store';
+    }, 2000);
+    return;
+  }
+  if (btn) {
+    clearTimeout(btn._confirmTimer);
+    btn.classList.remove('confirm');
+    btn.textContent = 'Store';
+  }
+
+  slot.data = chartData.map(p => ({ x: p.x, rawDb: p.rawDb }));
+  slot.start = parseFloat(startFreqEl.value) || DEFAULT_START_FREQ;
+  slot.end = parseFloat(endFreqEl.value) || DEFAULT_END_FREQ;
+  slot.visible = true;
   activePeakSource = i;
-  updateSlotMeta(i);
-  updateSlotCheckbox(i);
+  refreshSlotUI(i);
   updateChart();
+  showToast(`Stored measurement in "${slot.name}"`, 'green');
+  scheduleSave();
 }
 
 function saveSlot(i) {
   const slot = slots[i];
-  if (!slot.data || slot.data.length === 0) return;
-  const obj = {
+  if (!slot.data.length) {
+    showToast('Slot is empty — nothing to save', 'orange');
+    return;
+  }
+  const payload = {
     type: 'guitar-pickup-bode-measurement',
     version: 1,
     name: slot.name,
@@ -1696,143 +1697,248 @@ function saveSlot(i) {
     end: slot.end,
     points: slot.data.map(p => ({ x: p.x, rawDb: p.rawDb }))
   };
-  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'text/plain' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = `${(slot.name || 'slot').replace(/\s+/g, '-').toLowerCase()}.txt`;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${slot.name.replace(/[^\w\- ]+/g, '_') || `slot-${i + 1}`}.bode`;
   a.click();
-  URL.revokeObjectURL(url);
+  URL.revokeObjectURL(a.href);
+  showToast(`Saved "${a.download}"`, 'green');
 }
 
-function loadSlot(i, file) {
-  if (!file) return;
+function loadSlotFromFile(i, file) {
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = () => {
     try {
-      const obj = JSON.parse(e.target.result);
-      if (!Array.isArray(obj.points)) throw new Error('Invalid file');
-      const pts = obj.points.filter(p => typeof p.x === 'number' && typeof p.rawDb === 'number');
-      slots[i].data    = pts;
-      slots[i].name    = obj.name || slots[i].name;
-      slots[i].start   = obj.start || DEFAULT_START_FREQ;
-      slots[i].end     = obj.end   || DEFAULT_END_FREQ;
-      slots[i].visible = true;
+      const obj = JSON.parse(reader.result);
+      if (!Array.isArray(obj.points) || !obj.points.length || !obj.points.every(isRawPoint)) {
+        throw new Error('invalid points');
+      }
+      const slot = slots[i];
+      slot.data = obj.points.map(p => ({ x: p.x, rawDb: p.rawDb }));
+      slot.name = typeof obj.name === 'string' && obj.name ? obj.name : slot.name;
+      slot.start = typeof obj.start === 'number' ? obj.start : slot.data[0].x;
+      slot.end = typeof obj.end === 'number' ? obj.end : slot.data[slot.data.length - 1].x;
+      slot.visible = true;
       activePeakSource = i;
-      // Update name input
-      const nameEl = document.querySelector(`.slot-name[data-slot="${i}"]`);
-      if (nameEl) nameEl.value = slots[i].name;
-      updateSlotMeta(i);
-      updateSlotCheckbox(i);
+      refreshSlotUI(i);
       updateChart();
-    } catch(err) {
-      alert('Failed to load measurement: ' + err.message);
+      showToast(`Loaded "${slot.name}" into slot ${i + 1}`, 'green');
+      scheduleSave();
+    } catch (err) {
+      showToast(`Could not load "${file.name}" — not a valid measurement`, 'red');
     }
   };
   reader.readAsText(file);
 }
 
-function updateSlotMeta(i) {
-  const el = document.getElementById(`slot-meta-${i}`);
-  if (!el) return;
-  const slot = slots[i];
-  el.textContent = slot.data ? `${slot.data.length} pts · ${fmtHz(slot.start)}–${fmtHz(slot.end)}` : 'Empty';
+function loadSlot(i, fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+  loadSlotFromFile(i, file);
+  fileInput.value = '';
 }
 
-function updateSlotCheckbox(i) {
-  const cb = document.querySelector(`[data-slot-show="${i}"]`);
-  if (cb) cb.checked = slots[i].visible;
-}
-
-// ─── Clear Latest ─────────────────────────────────────────────────────────────
+/* ---------- Clear Latest ---------- */
 function clearLatest() {
-  chartData       = [];
+  chartData = [];
   chartPointCloud = [];
-  document.getElementById('currentFreq').textContent = '-- Hz';
-  document.getElementById('currentFreq').className   = 'status-value';
-  document.getElementById('progress').textContent    = '0%';
+  currentFreqEl.textContent = '-- Hz';
+  currentFreqEl.classList.remove('red');
+  progressEl.textContent = '0%';
+  $('sweepProgressBar').style.width = '0%';
   if (activePeakSource === 'current') activePeakSource = null;
-  setStatus('Latest measurement cleared');
+  showToast('Latest measurement cleared');
   updateChart();
+  scheduleSave();
 }
 
-// ─── Export PNG ───────────────────────────────────────────────────────────────
+/* ---------- Export PNG ---------- */
+function exportVisibleCurves() {
+  const curves = [];
+  if (chartData.length) curves.push({ name: 'Current', color: '#ff3b4f', data: chartData });
+  slots.forEach((s, i) => {
+    if (s.visible && s.data.length) curves.push({ name: s.name, color: slotColor(i), data: s.data });
+  });
+  return curves;
+}
+
 function exportPng() {
-  const src    = document.getElementById('bodeChart');
+  const src = bodeChart.canvas;
+  const isLight = document.body.classList.contains('light');
+  const bg = isLight ? '#ffffff' : '#15181f';
+  const dim = isLight ? '#5a6080' : '#7a8099';
+  const fg = isLight ? '#1a1d2e' : '#d4d8e8';
+  const headerH = 150;
+
   const canvas = document.createElement('canvas');
-  canvas.width  = src.width  * 2;
-  canvas.height = src.height * 2;
+  canvas.width = src.width * 2;
+  canvas.height = src.height * 2 + headerH;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#15181f';
+  ctx.fillStyle = bg;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.drawImage(src, 0, 0, canvas.width, canvas.height);
-  const ts = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-  const a  = document.createElement('a');
-  a.href   = canvas.toDataURL('image/png');
-  a.download = `bode-plot-${ts}.png`;
+
+  const font = '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.fillStyle = '#ff9c00';
+  ctx.font = `700 38px ${font}`;
+  ctx.fillText("Nick's Guitar Pickup Bode Plotter", 40, 58);
+  ctx.fillStyle = dim;
+  ctx.font = `400 20px ${font}`;
+  ctx.fillText(new Date().toLocaleString(), 40, 92);
+
+  // Legend line with color swatches
+  let lx = 40;
+  const ly = 128;
+  ctx.font = `600 20px ${font}`;
+  exportVisibleCurves().forEach(c => {
+    ctx.fillStyle = c.color;
+    ctx.fillRect(lx, ly - 8, 26, 7);
+    lx += 34;
+    ctx.fillStyle = fg;
+    ctx.fillText(c.name, lx, ly + 2);
+    lx += ctx.measureText(c.name).width + 28;
+  });
+
+  ctx.drawImage(src, 0, headerH, canvas.width, src.height * 2);
+  const a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = `bode-plot-${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
   a.click();
 }
 
-// ─── Help ─────────────────────────────────────────────────────────────────────
-document.getElementById('btnHelp').addEventListener('click', () => {
-  document.getElementById('helpOverlay').classList.add('open');
-});
-document.getElementById('helpClose').addEventListener('click', () => {
-  document.getElementById('helpOverlay').classList.remove('open');
-});
-document.getElementById('helpOverlay').addEventListener('click', e => {
-  if (e.target === document.getElementById('helpOverlay'))
-    document.getElementById('helpOverlay').classList.remove('open');
-});
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.getElementById('helpOverlay').classList.remove('open');
-});
-
-// ─── Button wiring ────────────────────────────────────────────────────────────
-document.getElementById('btnEnable').addEventListener('click', enableAudio);
-document.getElementById('btnTest').addEventListener('click', toggleTestTone);
-document.getElementById('btnSweep').addEventListener('click', startSweep);
-document.getElementById('btnStop').addEventListener('click', stopSweepOrTest);
-document.getElementById('btnExport').addEventListener('click', exportPng);
-document.getElementById('btnClear').addEventListener('click', clearLatest);
-document.getElementById('btnTheme').addEventListener('click', () => {
-  const isLight = document.body.classList.toggle('light');
-  const btn = document.getElementById('btnTheme');
-  btn.innerHTML = isLight
-    ? '<i data-lucide="moon" width="14" height="14"></i>'
-    : '<i data-lucide="sun" width="14" height="14"></i>';
-  renderIcons();
-  // Update chart grid/text colors to match theme
-  const gridColor  = isLight ? '#d0d4e0' : '#2a2f3f';
-  const labelColor = isLight ? '#5a6080' : '#7a8099';
-  bodeChart.options.scales.x.grid.color          = gridColor;
-  bodeChart.options.scales.x.title.color         = labelColor;
-  bodeChart.options.scales.x.ticks.color         = labelColor;
-  bodeChart.options.scales.y.grid.color          = gridColor;
-  bodeChart.options.scales.y.title.color         = labelColor;
-  bodeChart.options.scales.y.ticks.color         = labelColor;
-  bodeChart.options.plugins.legend.labels.color  = isLight ? '#1a1d2e' : '#d4d8e8';
-  bodeChart.options.plugins.tooltip.backgroundColor = isLight ? '#ffffff' : '#1e2230';
-  bodeChart.options.plugins.tooltip.borderColor     = isLight ? '#c8cdde' : '#2a2f3f';
-  bodeChart.options.plugins.tooltip.titleColor      = '#ff9c00';
-  bodeChart.options.plugins.tooltip.bodyColor       = isLight ? '#1a1d2e' : '#d4d8e8';
-  bodeChart.update();
-});
-
-// ─── Utils ────────────────────────────────────────────────────────────────────
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-function logspace(start, end, n) {
-  const pts = [];
-  const logStart = Math.log10(start);
-  const logEnd   = Math.log10(end);
-  for (let i = 0; i < n; i++) {
-    pts.push(Math.pow(10, logStart + (logEnd - logStart) * i / (n - 1)));
+/* ---------- Export CSV ---------- */
+function exportCsv() {
+  const curves = exportVisibleCurves();
+  if (!curves.length) {
+    showToast('No visible data to export', 'orange');
+    return;
   }
-  return pts;
+  const rows = [['source', 'frequency_hz', 'raw_db']];
+  curves.forEach(c => {
+    c.data.forEach(p => rows.push([`"${c.name.replace(/"/g, '""')}"`, p.x.toFixed(2), p.rawDb.toFixed(3)]));
+  });
+  const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `bode-data-${new Date().toISOString().replace(/[:.]/g, '-')}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast(`Exported ${curves.length} curve${curves.length > 1 ? 's' : ''} as CSV`, 'green');
 }
 
-// ─── Chart resize handle ──────────────────────────────────────────────────────
+/* ---------- Light/Dark toggle ---------- */
+function applyTheme(isLight) {
+  document.body.classList.toggle('light', isLight);
+  themeBtn.innerHTML = `<i data-lucide="${isLight ? 'moon' : 'sun'}"></i>`;
+  renderIcons();
+
+  const gridColor = isLight ? '#d0d4e0' : '#2a2f3f';
+  const labelColor = isLight ? '#5a6080' : '#7a8099';
+  const o = bodeChart.options;
+  o.scales.x.grid.color = gridColor;
+  o.scales.y.grid.color = gridColor;
+  o.scales.x.title.color = labelColor;
+  o.scales.y.title.color = labelColor;
+  o.scales.x.ticks.color = labelColor;
+  o.scales.y.ticks.color = labelColor;
+  o.plugins.legend.labels.color = isLight ? '#1a1d2e' : '#d4d8e8';
+  o.plugins.tooltip.backgroundColor = isLight ? '#ffffff' : '#1e2230';
+  o.plugins.tooltip.borderColor = isLight ? '#c8cdde' : '#2a2f3f';
+  o.plugins.tooltip.bodyColor = isLight ? '#1a1d2e' : '#d4d8e8';
+  o.plugins.tooltip.titleColor = '#ff9c00';
+  refreshSlotDots();
+  updateChart();   // rebuilds datasets so theme-dependent slot colors apply
+}
+
+function toggleTheme() {
+  applyTheme(!document.body.classList.contains('light'));
+  scheduleSave();
+}
+
+/* ---------- Help overlay ---------- */
+function openHelp() { helpOverlay.classList.remove('hidden'); }
+function closeHelp() { helpOverlay.classList.add('hidden'); }
+
+/* ---------- Slider value displays ---------- */
+function fmtSigned(v, decimals) {
+  const n = parseFloat(v);
+  const s = decimals != null ? n.toFixed(decimals) : `${n}`;
+  return n > 0 ? `+${s}` : s;
+}
+
+function wireSliders() {
+  scanDurationEl.addEventListener('input', () => {
+    $('scanDurationVal').textContent = `${scanDurationEl.value} s`;
+  });
+  readingsPerPointEl.addEventListener('input', () => {
+    $('readingsPerPointVal').textContent = readingsPerPointEl.value;
+  });
+  inputSensitivityEl.addEventListener('input', () => {
+    $('inputSensitivityVal').textContent = `${fmtSigned(inputSensitivityEl.value)} dB`;
+    if (inputGainNode) inputGainNode.gain.value = dbToGain(parseFloat(inputSensitivityEl.value));
+  });
+  outputAttenuationEl.addEventListener('input', () => {
+    $('outputAttenuationVal').textContent = `${outputAttenuationEl.value} dB/oct`;
+  });
+  graphSmoothnessEl.addEventListener('input', () => {
+    $('graphSmoothnessVal').textContent = graphSmoothnessEl.value;
+    updateChart();
+  });
+  graphOffsetEl.addEventListener('input', () => {
+    $('graphOffsetVal').textContent = `${fmtSigned(graphOffsetEl.value, 1)} dB/oct`;
+    updateChart();
+  });
+  ['input', 'change'].forEach(ev => {
+    startFreqEl.addEventListener(ev, updateChart);
+    endFreqEl.addEventListener(ev, updateChart);
+  });
+}
+
+/* ---------- Wiring ---------- */
+enableAudioBtn.addEventListener('click', enableAudio);
+testBtn.addEventListener('click', toggleTestTone);
+sweepBtn.addEventListener('click', startSweep);
+stopBtn.addEventListener('click', onStop);
+exportBtn.addEventListener('click', exportPng);
+$('exportCsvBtn').addEventListener('click', exportCsv);
+clearBtn.addEventListener('click', clearLatest);
+helpBtn.addEventListener('click', openHelp);
+helpCloseBtn.addEventListener('click', closeHelp);
+helpOverlay.addEventListener('click', e => { if (e.target === helpOverlay) closeHelp(); });
+
+/* ---------- Keyboard shortcuts ---------- */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeHelp(); return; }
+  const t = e.target;
+  if (t && (t.tagName === 'INPUT' || t.tagName === 'SELECT' || t.tagName === 'TEXTAREA' ||
+            t.tagName === 'BUTTON' || t.isContentEditable)) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+
+  if (e.code === 'Space') {
+    e.preventDefault();
+    if (isSweeping) sweepAbort = true;
+    else if (audioCtx && !sweepBtn.disabled) startSweep();
+  } else if (e.key === 't' || e.key === 'T') {
+    toggleTestTone();
+  } else if (e.key >= '1' && e.key <= '6') {
+    const i = +e.key - 1;
+    if (!slots[i].data.length) return;
+    slots[i].visible = !slots[i].visible;
+    slotListEl.querySelector(`[data-slot-show="${i}"]`).checked = slots[i].visible;
+    if (slots[i].visible) activePeakSource = i;
+    updateChart();
+    scheduleSave();
+  } else if (e.key === 'd' || e.key === 'D') {
+    toggleTheme();
+  } else if (e.key === 'h' || e.key === 'H' || e.key === '?') {
+    openHelp();
+  }
+});
+
+themeBtn.addEventListener('click', toggleTheme);
+wireSliders();
+
+/* ---------- Chart resize handle ---------- */
 (function() {
   const handle = document.getElementById('chartResizeHandle');
   const wrap   = document.getElementById('chartWrap');
@@ -1857,6 +1963,7 @@ function logspace(start, end, n) {
       document.body.style.userSelect = '';
       document.removeEventListener('mousemove', onMove);
       document.removeEventListener('mouseup', onUp);
+      scheduleSave();
     }
 
     document.addEventListener('mousemove', onMove);
@@ -1864,10 +1971,57 @@ function logspace(start, end, n) {
   });
 })();
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
+/* ---------- Slider track fill ---------- */
+function paintRange(el) {
+  const min = parseFloat(el.min || 0), max = parseFloat(el.max || 100);
+  const pct = ((parseFloat(el.value) - min) / (max - min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--accent) ${pct}%, var(--surface2) ${pct}%)`;
+}
+document.querySelectorAll('input[type="range"]').forEach(el => {
+  paintRange(el);
+  el.addEventListener('input', () => paintRange(el));
+});
+
+function refreshSliderDisplays() {
+  $('scanDurationVal').textContent = `${scanDurationEl.value} s`;
+  $('readingsPerPointVal').textContent = readingsPerPointEl.value;
+  $('inputSensitivityVal').textContent = `${fmtSigned(inputSensitivityEl.value)} dB`;
+  $('outputAttenuationVal').textContent = `${outputAttenuationEl.value} dB/oct`;
+  $('graphSmoothnessVal').textContent = graphSmoothnessEl.value;
+  $('graphOffsetVal').textContent = `${fmtSigned(graphOffsetEl.value, 1)} dB/oct`;
+  document.querySelectorAll('input[type="range"]').forEach(paintRange);
+}
+
+/* ---------- Drag & drop .bode files onto the page ---------- */
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => {
+  e.preventDefault();
+  const file = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!file) return;
+  const idx = slots.findIndex(s => !s.data.length);
+  if (idx === -1) {
+    showToast('All slots are full — drop onto a specific slot to replace it', 'orange');
+    return;
+  }
+  loadSlotFromFile(idx, file);
+});
+
+/* ---------- Autosave on any control change ---------- */
+document.addEventListener('input', scheduleSave);
+document.addEventListener('change', scheduleSave);
+window.addEventListener('beforeunload', saveState);
+
+/* ---------- Init ---------- */
+loadState();
+refreshSliderDisplays();
 initChart();
 buildSlotUI();
 renderIcons();
+if (document.body.classList.contains('light')) {
+  applyTheme(true);       // also refreshes slot dots and redraws restored data
+} else {
+  updateChart();          // render restored measurements
+}
 </script>
 </body>
 </html>

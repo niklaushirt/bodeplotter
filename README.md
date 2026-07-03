@@ -10,6 +10,10 @@ This is meant as an approachable experiment and comparison tool, not a laborator
 
 - Browser-based, single `index.html` app
 
+- Toggle slots with keys 1-6
+
+- Start Test Tone with T
+
 - Selectable audio input and output devices
 
 - Input and output channel selection
@@ -34,15 +38,9 @@ This is meant as an approachable experiment and comparison tool, not a laborator
 
 - The implementation briefs used with Codex and Claude Code (you can try both implementations by opening the corresponding index.html file. Default is the Claude Code version that I prefer)
 
-  
-
 ## How To Use
 
-
-
 2. Open the app in a browser: [https://niklaushirt.github.io/bodeplotter/](https://niklaushirt.github.io/bodeplotter/)
-
-
 
 3. Place your pickup in the measurement device.
 
@@ -78,44 +76,27 @@ Each slot has its own color. The current/latest measurement is shown in red.
 - The graph is normalized so the first visible point at the selected start frequency is `0 dB`.
 - The plotted dB scale is approximate and intentionally scaled for readability.
 
-
-
 ## Helpful Links
 
 You will need a coil driver for this to work. [Here](https://www.youtube.com/watch?v=SCeFtqdcS1Y) is a super cool video on how to make one yourself.
 
 It's pretty easy to build.
 
-
-
 My everyday coil driver
 
-
 ![Coil1](screenshots/Coil1.png)
-
-
 
 With a pickup hooked up
 
 ![Coil2](screenshots/Coil2.png)
 
-
-
 The inside
 
 ![Coil3](screenshots/Coil3.png)
-
-
 
 ## Helpful Links
 
 - Build your own coil driver: [https://www.youtube.com/watch?v=SCeFtqdcS1Y](https://www.youtube.com/watch?v=SCeFtqdcS1Y)
 - For serious pickup plotting, see AxeTech: [https://www.axetech.com](https://www.axetech.com)
-
-
-
-
-
-
 
 ©2026 Built with ❤️ by Niklaus Hirt
