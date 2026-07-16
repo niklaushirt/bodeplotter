@@ -12,6 +12,8 @@ This is meant as an approachable experiment and comparison tool, not a laborator
 
 - Orange-accented welcome screen that explains the audio permission and unlocks the workspace with one click
 
+- Matching browser favicon and iPhone home-screen icon
+
 - Toggle slots with keys 1-6
 
 - Start Test Tone with T

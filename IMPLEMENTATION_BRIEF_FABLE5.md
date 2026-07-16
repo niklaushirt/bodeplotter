@@ -9,7 +9,14 @@ Implement the app as one self-contained `index.html` with inline HTML, CSS, and 
 
 No build step. No Tailwind. Must run from localhost or a secure context so browser audio permissions work.
 
-**Asset:** `logo.png` next to `index.html` (source: `/Users/nhirt/Documents/NICI_GUITAR_LOGO.png`) — 779×501 RGBA PNG, transparent background, Keith-Haring-style guitar illustration in black.
+**Assets:**
+
+- `logo.png` next to `index.html` (source: `/Users/nhirt/Documents/NICI_GUITAR_LOGO.png`) — 779×501 RGBA PNG, transparent background, Keith-Haring-style guitar illustration in black.
+- `app-icon-1024.png` — 1024×1024 RGB master icon with the simplified guitar mark on a charcoal-and-orange background.
+- `apple-touch-icon.png` — 180×180 iPhone home-screen icon.
+- `favicon-32x32.png` and `favicon-16x16.png` — browser favicon sizes.
+
+The document head links both favicon PNGs, the 180px Apple touch icon, sets `theme-color` to `#0f1117`, and uses `Bode Plotter` as the Apple mobile web-app title.
 
 ---
 
