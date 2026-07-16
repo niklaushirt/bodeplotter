@@ -55,6 +55,24 @@ Base styles: `* { box-sizing: border-box }`; body uses the system font stack (`-
 
 ---
 
+## Welcome / Audio Permission Splash
+
+On every page load, show a full-viewport welcome screen above the application (`z-index: 300`). It is a startup gate rather than a dismissible marketing modal: the user enters the workspace by enabling audio.
+
+- Use the existing `logo.png` inside a circular orange-accented frame.
+- Kicker: `PICKUP RESPONSE LAB`
+- Heading: `Welcome to the Bode Plotter`
+- Explain that enabling audio connects the soundcard and that audio stays on the device.
+- Primary orange CTA: `Enable audio & enter`, wired to the same `enableAudio()` function as the header button.
+- While permission is pending, disable both enable buttons and show `Connecting audio…` plus a live status message.
+- On success, show a short `Audio ready` state, fade the splash away, then focus **Test Signal**.
+- On failure, keep the splash visible, provide a permission-specific message when access was denied, and change the CTA to `Try enabling audio again`.
+- Respect `prefers-reduced-motion` and collapse spacing/logo sizing on phones.
+
+The splash uses orange accents (`--accent-2`) over the dark app background, with a thin orange top highlight and subtle radial glows. Keep the application shell inert and hidden from assistive technology until audio is ready. The header's **Enable Audio** button remains in place and becomes the disabled `Audio enabled` confirmation after entry.
+
+---
+
 ## Header
 
 Browser title and H1: `Nick's Guitar Pickup Bode Plotter`

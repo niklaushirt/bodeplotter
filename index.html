@@ -43,6 +43,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+body.welcome-active { position: fixed; inset: 0; width: 100%; overflow: hidden; }
 ::selection { background: rgba(0,76,252,0.35); }
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -528,6 +529,157 @@ input[type="range"]:focus-visible { box-shadow: var(--focus-ring); }
 .hidden { display: none !important; }
 .note { font-size: 11px; color: var(--accent-2); margin-top: 6px; }
 
+/* Welcome / audio permission splash */
+.welcome-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(255,156,0,0.18), transparent 34%),
+    linear-gradient(145deg, rgba(15,17,23,0.97), rgba(9,10,14,0.99));
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: opacity .32s ease, visibility .32s ease;
+}
+.welcome-splash::before,
+.welcome-splash::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(1px);
+}
+.welcome-splash::before {
+  width: 420px;
+  height: 420px;
+  left: -250px;
+  bottom: -220px;
+  border: 1px solid rgba(255,156,0,0.22);
+  box-shadow: 0 0 90px rgba(255,156,0,0.06);
+}
+.welcome-splash::after {
+  width: 260px;
+  height: 260px;
+  right: -150px;
+  top: -120px;
+  border: 1px solid rgba(255,156,0,0.15);
+}
+.welcome-splash.is-leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.welcome-card {
+  position: relative;
+  width: min(560px, 100%);
+  padding: 36px 38px 34px;
+  overflow: hidden;
+  text-align: center;
+  background: linear-gradient(155deg, rgba(30,34,48,0.96), rgba(21,24,31,0.98));
+  border: 1px solid rgba(255,156,0,0.35);
+  border-radius: 20px;
+  box-shadow: 0 28px 80px rgba(0,0,0,0.52), 0 0 0 1px rgba(255,255,255,0.025) inset;
+  animation: welcome-in .48s cubic-bezier(.2,.8,.2,1);
+}
+.welcome-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-2) 28%, #ffc15c 50%, var(--accent-2) 72%, transparent);
+}
+@keyframes welcome-in {
+  from { opacity: 0; transform: translateY(18px) scale(.975); }
+  to { opacity: 1; transform: none; }
+}
+.welcome-logo-wrap {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  margin: 0 auto 18px;
+  border: 1px solid rgba(255,156,0,0.26);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,156,0,0.12), rgba(255,156,0,0.02) 65%, transparent 66%);
+}
+.welcome-logo {
+  width: 82px;
+  height: 66px;
+  object-fit: contain;
+  filter: invert(1);
+  opacity: .92;
+}
+.welcome-kicker {
+  margin-bottom: 10px;
+  color: var(--accent-2);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+}
+.welcome-card h2 {
+  max-width: 450px;
+  margin: 0 auto 12px;
+  color: #f6f7fb;
+  font-size: clamp(28px, 5vw, 40px);
+  line-height: 1.08;
+  letter-spacing: -.035em;
+}
+.welcome-copy {
+  max-width: 440px;
+  margin: 0 auto 24px;
+  color: #a5abc0;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.welcome-enable-btn {
+  width: min(310px, 100%);
+  height: 48px;
+  border: 1px solid #ffb236;
+  border-radius: 9px;
+  background: linear-gradient(180deg, #ffb43d, #f79300);
+  color: #17100a;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: .015em;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 10px 28px rgba(247,147,0,.24);
+  transition: transform .08s, filter .15s, box-shadow .15s, opacity .15s;
+}
+.welcome-enable-btn:hover:not(:disabled) { filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255,255,255,.42), 0 13px 34px rgba(247,147,0,.32); }
+.welcome-enable-btn:active:not(:disabled) { transform: translateY(1px); }
+.welcome-enable-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(255,156,0,.25), 0 13px 34px rgba(247,147,0,.32); }
+.welcome-enable-btn:disabled { cursor: wait; opacity: .72; }
+.welcome-enable-btn svg { width: 18px; height: 18px; margin-right: 8px; vertical-align: -4px; }
+.welcome-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 20px;
+  margin: 14px 0 0;
+  color: #777f96;
+  font-size: 11px;
+  line-height: 1.4;
+}
+.welcome-note svg { width: 14px; height: 14px; color: var(--accent-2); flex: 0 0 auto; }
+.welcome-note.error { color: #ff8290; }
+.welcome-note.error svg { color: #ff8290; }
+@media (max-width: 520px) {
+  .welcome-splash { padding: 14px; }
+  .welcome-card { padding: 28px 20px 26px; border-radius: 16px; }
+  .welcome-logo-wrap { width: 88px; height: 88px; margin-bottom: 15px; }
+  .welcome-logo { width: 70px; height: 56px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .welcome-card { animation: none; }
+  .welcome-splash { transition: none; }
+}
+
 /* Help overlay */
 .overlay {
   position: fixed;
@@ -562,8 +714,26 @@ input[type="range"]:focus-visible { box-shadow: var(--focus-ring); }
 .overlay-footer { font-size: 12px; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 10px; line-height: 1.7; }
 </style>
 </head>
-<body>
+<body class="welcome-active">
 
+<div class="welcome-splash" id="welcomeSplash" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeCopy welcomeStatus">
+  <div class="welcome-card">
+    <div class="welcome-logo-wrap" aria-hidden="true">
+      <img class="welcome-logo" src="logo.png" alt="">
+    </div>
+    <div class="welcome-kicker">Pickup response lab</div>
+    <h2 id="welcomeTitle">Welcome to the Bode Plotter</h2>
+    <p class="welcome-copy" id="welcomeCopy">Measure and compare the frequency response of your guitar pickups. Enable audio to connect your soundcard and enter the workspace.</p>
+    <button class="welcome-enable-btn" id="welcomeEnableBtn" type="button" autofocus>
+      <i data-lucide="power"></i>Enable audio &amp; enter
+    </button>
+    <p class="welcome-note" id="welcomeStatus" aria-live="polite">
+      <i data-lucide="shield-check"></i><span>Your browser will ask for microphone access. Audio stays on this device.</span>
+    </p>
+  </div>
+</div>
+
+<div id="appShell" inert aria-hidden="true">
 <header class="header">
   <img class="header-logo" src="logo.png" alt="Logo">
   <h1>Nick's Guitar Pickup Bode Plotter</h1>
@@ -714,6 +884,8 @@ input[type="range"]:focus-visible { box-shadow: var(--focus-ring); }
 
 </div>
 
+</div>
+
 <!-- Help overlay -->
 <div class="overlay hidden" id="helpOverlay">
   <div class="overlay-box">
@@ -791,6 +963,8 @@ const enableAudioBtn = $('enableAudioBtn'), testBtn = $('testBtn'), sweepBtn = $
       sineOnlyEl = $('sineOnly'),
       graphSmoothnessEl = $('graphSmoothness'), graphOffsetEl = $('graphOffset'),
       helpOverlay = $('helpOverlay'), helpCloseBtn = $('helpCloseBtn'),
+      welcomeSplash = $('welcomeSplash'), welcomeEnableBtn = $('welcomeEnableBtn'), welcomeStatus = $('welcomeStatus'),
+      appShell = $('appShell'),
       slotListEl = $('slotList');
 
 /* ---------- State ---------- */
@@ -800,6 +974,7 @@ let oscNode = null, outGainNode = null, outMerger = null, outAnalyser = null, ou
 let meterTimer = null;
 let noiseRms = 0;
 const noiseFloorCache = {};
+let isEnablingAudio = false, audioEnabled = false;
 let isTestTone = false, isSweeping = false, sweepAbort = false;
 let chartData = [], chartPointCloud = [];
 let activePeakSource = null;   // 'current' | 0..5 | null
@@ -929,12 +1104,20 @@ function loadState() {
 
 /* ---------- Audio: enable ---------- */
 async function enableAudio() {
+  if (audioEnabled || isEnablingAudio) return;
+  isEnablingAudio = true;
+  let permissionStream = null;
   enableAudioBtn.disabled = true;
+  welcomeEnableBtn.disabled = true;
+  welcomeEnableBtn.innerHTML = '<i data-lucide="loader-circle"></i>Connecting audio…';
+  welcomeStatus.classList.remove('error');
+  welcomeStatus.innerHTML = '<i data-lucide="radio"></i><span>Waiting for browser permission…</span>';
+  renderIcons();
   try {
     const constraints = {
       echoCancellation: false, noiseSuppression: false, autoGainControl: false, channelCount: 2
     };
-    const tempStream = await navigator.mediaDevices.getUserMedia({ audio: constraints });
+    permissionStream = await navigator.mediaDevices.getUserMedia({ audio: constraints });
 
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     await audioCtx.resume();
@@ -959,7 +1142,8 @@ async function enableAudio() {
       outputDeviceEl.appendChild(o);
     });
 
-    tempStream.getTracks().forEach(t => t.stop());
+    permissionStream.getTracks().forEach(t => t.stop());
+    permissionStream = null;
 
     // Restore last-used devices when they are still present
     if (savedDevices.input && inputs.some(d => d.deviceId === savedDevices.input)) {
@@ -988,6 +1172,7 @@ async function enableAudio() {
 
     await learnNoiseFloor();
 
+    audioEnabled = true;
     setStatus('Audio ready', 'green');
     enableAudioBtn.innerHTML = '<i data-lucide="power"></i>Audio enabled';
     enableAudioBtn.disabled = true;
@@ -995,14 +1180,43 @@ async function enableAudio() {
     sweepBtn.disabled = false;
     renderIcons();
 
+    welcomeStatus.innerHTML = '<i data-lucide="circle-check"></i><span>Audio ready. Opening the workspace…</span>';
+    renderIcons();
+    welcomeSplash.classList.add('is-leaving');
+    welcomeSplash.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('welcome-active');
+    appShell.removeAttribute('inert');
+    appShell.removeAttribute('aria-hidden');
+    setTimeout(() => {
+      welcomeSplash.classList.add('hidden');
+      testBtn.focus();
+    }, 340);
+
     inputDeviceEl.addEventListener('change', onInputDeviceChange);
     inputChannelEl.addEventListener('change', onInputChannelChange);
     outputDeviceEl.addEventListener('change', onOutputDeviceChange);
     outputChannelEl.addEventListener('change', onOutputChannelChange);
   } catch (err) {
     console.error(err);
+    if (permissionStream) permissionStream.getTracks().forEach(t => t.stop());
+    if (inputStream) inputStream.getTracks().forEach(t => t.stop());
+    inputStream = null;
+    if (meterTimer) clearInterval(meterTimer);
+    meterTimer = null;
+    if (audioCtx && audioCtx.state !== 'closed') {
+      try { await audioCtx.close(); } catch (e) { /* retry can still rebuild the context */ }
+    }
+    audioCtx = null;
     setStatus(`Audio error: ${err.message}`, 'red');
     enableAudioBtn.disabled = false;
+    welcomeEnableBtn.disabled = false;
+    welcomeEnableBtn.innerHTML = '<i data-lucide="rotate-cw"></i>Try enabling audio again';
+    welcomeStatus.classList.add('error');
+    const denied = err && (err.name === 'NotAllowedError' || err.name === 'SecurityError');
+    welcomeStatus.innerHTML = `<i data-lucide="${denied ? 'shield-alert' : 'triangle-alert'}"></i><span>${denied ? 'Microphone access was blocked. Allow it in your browser, then try again.' : 'Audio could not be started. Check your soundcard and try again.'}</span>`;
+    renderIcons();
+  } finally {
+    isEnablingAudio = false;
   }
 }
 
@@ -1896,6 +2110,7 @@ function wireSliders() {
 
 /* ---------- Wiring ---------- */
 enableAudioBtn.addEventListener('click', enableAudio);
+welcomeEnableBtn.addEventListener('click', enableAudio);
 testBtn.addEventListener('click', toggleTestTone);
 sweepBtn.addEventListener('click', startSweep);
 stopBtn.addEventListener('click', onStop);

@@ -10,6 +10,8 @@ This is meant as an approachable experiment and comparison tool, not a laborator
 
 - Browser-based, single `index.html` app
 
+- Orange-accented welcome screen that explains the audio permission and unlocks the workspace with one click
+
 - Toggle slots with keys 1-6
 
 - Start Test Tone with T
@@ -46,7 +48,7 @@ This is meant as an approachable experiment and comparison tool, not a laborator
 
 4. Connect the device to your soundcard input and output.
 
-5. Click **Enable Audio** and allow browser microphone/audio permission.
+5. On the welcome screen, click **Enable audio & enter** and allow browser microphone/audio permission. Audio is processed locally on your device.
 
 6. Select the input and output devices/channels for your soundcard.
 
